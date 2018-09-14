@@ -28,6 +28,7 @@ namespace DiscordBot
         {
             container = new Container(c =>
             {
+                c.For<IConnection>().Use<DiscordConnection>();
                 // Add the types you need
                 // c.For<YourInterface>().Use<YourConcretion>();
                 // c.ForSingletonOf<YourSingletonType>().UseIfNone<YourSingletonType>();

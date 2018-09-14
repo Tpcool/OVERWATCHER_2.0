@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace DiscordBot
 {
@@ -7,7 +6,7 @@ namespace DiscordBot
     {
         static async Task Main(string[] args)
         {
-            await Task.Delay(-1);
+            await InversionOfControl.Container.GetInstance<DiscordBot>().Run();
         }
     }
 }
