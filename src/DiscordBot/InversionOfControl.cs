@@ -1,5 +1,8 @@
+using Discord.WebSocket;
 using DiscordBot.Configuration;
 using DiscordBot.Connection;
+using DiscordBot.Handlers;
+using DiscordBot.Logging;
 using Lamar;
 
 namespace DiscordBot
@@ -32,7 +35,10 @@ namespace DiscordBot
             {
                 c.For<IConnection>().Use<DiscordConnection>();
                 c.For<IConfiguration>().Use<ConfigManager>();
-                // Add the types you need
+                c.For<ICommandHandler>().Use<DiscordCommandHandler>();
+                c.For<ILogger>().Use<ConsoleLogger>();
+                c.ForSingletonOf<DiscordSocketClient>().UseIfNone(DiscordSocketClientFactory.GetDefault());
+                // Add the types you need with:
                 // c.For<YourInterface>().Use<YourConcretion>();
                 // c.ForSingletonOf<YourSingletonType>().UseIfNone<YourSingletonType>();
             });
