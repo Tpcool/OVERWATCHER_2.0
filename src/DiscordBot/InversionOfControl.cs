@@ -1,3 +1,5 @@
+using DiscordBot.Configuration;
+using DiscordBot.Connection;
 using Lamar;
 
 namespace DiscordBot
@@ -29,6 +31,7 @@ namespace DiscordBot
             container = new Container(c =>
             {
                 c.For<IConnection>().Use<DiscordConnection>();
+                c.For<IConfiguration>().Use<ConfigManager>();
                 // Add the types you need
                 // c.For<YourInterface>().Use<YourConcretion>();
                 // c.ForSingletonOf<YourSingletonType>().UseIfNone<YourSingletonType>();
