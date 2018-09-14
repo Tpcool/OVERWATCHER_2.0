@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using DiscordBot.Connection;
 
 namespace DiscordBot
 {

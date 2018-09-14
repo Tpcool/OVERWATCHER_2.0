@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 
-namespace DiscordBot
+namespace DiscordBot.Connection
 {
     public class DiscordConnection : IConnection
     {
