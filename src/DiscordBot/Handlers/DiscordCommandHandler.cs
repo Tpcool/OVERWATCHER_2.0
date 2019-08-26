@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
+using DiscordBot.Configuration;
 using DiscordBot.Logging;
 
 namespace DiscordBot.Handlers
@@ -11,12 +12,14 @@ namespace DiscordBot.Handlers
         private readonly DiscordSocketClient client;
         private readonly CommandService commandService;
         private readonly ILogger logger;
+        private readonly IConfiguration config;
 
-        public DiscordCommandHandler(DiscordSocketClient client, CommandService commandService, ILogger logger)
+        public DiscordCommandHandler(DiscordSocketClient client, CommandService commandService, ILogger logger, IConfiguration config)
         {
             this.client = client;
             this.commandService = commandService;
             this.logger = logger;
+            this.config = config;
         }
 
         public async Task InitializeAsync()
@@ -27,13 +30,10 @@ namespace DiscordBot.Handlers
 
         private async Task HandleCommandAsync(SocketMessage s)
         {
-            if (!(s is SocketUserMessage msg))
-            {
-                return;
-            }
+            if (!(s is SocketUserMessage msg)) return;
             
             var argPos = 0;
-            if (msg.HasMentionPrefix(client.CurrentUser, ref argPos))
+            if (msg.HasStringPrefix(config.GetValueFor(Constants.CmdPrefix), ref argPos) || msg.HasMentionPrefix(client.CurrentUser, ref argPos))
             {
                 var context = new SocketCommandContext(client, msg);
                 await TryRunAsBotCommand(context, argPos).ConfigureAwait(false);
