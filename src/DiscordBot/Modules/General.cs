@@ -2,6 +2,7 @@
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using DiscordBot.Core;
 using DiscordBot.Utilities;
 
 namespace DiscordBot.Modules
@@ -23,21 +24,29 @@ namespace DiscordBot.Modules
         {
             var dm = await Context.User.GetOrCreateDMChannelAsync();
             string role = FormatMessages.GetFormattedAlert("TestRole");
+            var embed = Functions.GetDefaultBotEmbed();
 
             if (Functions.UserHasRole((SocketGuildUser)Context.User, role))
             {
-                await dm.SendMessageAsync(FormatMessages.GetFormattedAlert("TestRoleMsg_&ROLE", role));
+                embed.WithDescription(FormatMessages.GetFormattedAlert("TestRoleMsg_&ROLE", role));
+                await dm.SendMessageAsync("", false, embed.Build());
             }
             else
             {
-                await dm.SendMessageAsync(FormatMessages.GetFormattedAlert("TestNoRoleMsg_&ROLE", role));
+                embed.WithDescription(FormatMessages.GetFormattedAlert("TestNoRoleMsg_&ROLE", role));
+                await dm.SendMessageAsync("", false, embed.Build());
             }
         }
 
-        [Command("bigtest", RunMode = RunMode.Async)]
-        public async Task Bigtest()
+        [Command("bux", RunMode = RunMode.Async)]
+        public async Task Bux()
         {
-            
+            var account = UserAccounts.GetAccount(Context.User);
+            account.Ravebux += 1;
+            UserAccounts.SaveAccounts();
+            var embed = Functions.GetDefaultBotEmbed();
+            embed.WithDescription($"You have {account.Ravebux} ravebux. are they imaginary? {account.IsImaginary}.");
+            await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
     }
 }
