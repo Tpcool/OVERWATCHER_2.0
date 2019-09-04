@@ -1,9 +1,13 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using Discord.Rest;
 using Discord.WebSocket;
 using DiscordBot.Core;
 using DiscordBot.Utilities;
+using NReco.ImageGenerator;
 
 namespace DiscordBot.Modules
 {
@@ -38,15 +42,46 @@ namespace DiscordBot.Modules
             }
         }
 
-        [Command("bux", RunMode = RunMode.Async)]
-        public async Task Bux()
+        // todo: set up search system without pings
+        [Command("getbux", RunMode = RunMode.Async)]
+        public async Task Getbux([Remainder]string users = "")
         {
-            var account = UserAccounts.GetAccount(Context.User);
-            account.Ravebux += 1;
+            SocketUser target = null;
+            var mentionedUser = Context.Message.MentionedUsers.FirstOrDefault();
+
+            target = mentionedUser ?? Context.User;
+
+            var account = UserAccounts.GetAccount(target);
+            UserAccounts.GetAccount(Context.User).Ravebux += 1;
             UserAccounts.SaveAccounts();
+
             var embed = Functions.GetDefaultBotEmbed();
-            embed.WithDescription($"You have {account.Ravebux} ravebux. are they imaginary? {account.IsImaginary}.");
+            embed.WithDescription($"{target.Username} has {account.Ravebux} ravebux. are they imaginary? {account.IsImaginary}.");
             await Context.Channel.SendMessageAsync("", false, embed.Build());
+        }
+
+        // Doesn't work??? Can't get HtmlToImageConverter object to instantiate.
+
+        /*
+        [Command("image", RunMode = RunMode.Async)]
+        public async Task Image([Remainder]string text = "")
+        {
+            string path = @"..\..\..\index.html";
+            string path2 = @"Q:/Desktop/Programming/OVER_W4TCHER 2.0/src/DiscordBot/index.html";
+            string test = "<body>< div > WHAT ??? TEST!!!!Okay, this is your new text BOI:</ div >< br />< div >{ 1}</ div ></ body > ";
+            byte[] img = new HtmlToImageConverter().GenerateImage(test, NReco.ImageGenerator.ImageFormat.Jpeg);
+            // var img = converter.GenerateImageFromFile(path2, NReco.ImageGenerator.ImageFormat.Jpeg);
+            await Context.Channel.SendFileAsync(new MemoryStream(img), "test.jpg");
+        }
+        */
+
+        [Command("react")]
+        public async Task HandleReactionMessage()
+        {
+            var embed = Functions.GetDefaultBotEmbed(Functions.BotEmbedColor.Dark);
+            embed.WithDescription("👿 are you gonna react to me or what?");
+            RestUserMessage msg = await Context.Channel.SendMessageAsync("", embed: embed.Build());
+            Global.MessageIdToTrack = msg.Id;
         }
     }
 }

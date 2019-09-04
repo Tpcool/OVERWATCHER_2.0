@@ -1,8 +1,9 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using DiscordBot.Configuration;
 using DiscordBot.Logging;
+using DiscordBot.Core;
 
 namespace DiscordBot.Connection
 {
@@ -22,8 +23,21 @@ namespace DiscordBot.Connection
         public async Task Connect()
         {
             client.Log += logger.Log;
+            client.Ready += RepeatingTimer.StartTimer;
+            client.ReactionAdded += OnReactAdded;
             await client.LoginAsync(TokenType.Bot, config.GetValueFor(Constants.ConfigKeyToken));
             await client.StartAsync();
+            Global.Client = client;
+        }
+
+        private async Task OnReactAdded(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
+        {
+            if(reaction.MessageId == Global.MessageIdToTrack)
+            {
+                if (reaction.Emote.Name == "😈") {
+                    await channel.SendMessageAsync(reaction.User.Value.Username + " reacted with Overwatcher.");
+                }
+            }
         }
     }
 }

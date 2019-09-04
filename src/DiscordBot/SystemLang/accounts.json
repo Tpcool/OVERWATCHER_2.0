@@ -1,7 +1,12 @@
 [
   {
     "Id": 135932162581987328,
-    "Ravebux": 2,
+    "Ravebux": 10,
+    "IsImaginary": false
+  },
+  {
+    "Id": 462346036594212874,
+    "Ravebux": 0,
     "IsImaginary": false
   }
 ]
