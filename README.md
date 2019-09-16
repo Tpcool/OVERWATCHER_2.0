@@ -1,17 +1,15 @@
-# C# Discord bot template
+# OVERWATCHER_2.0, a ground up redesign of my old Discord bot
 
-This is a repository containing a simple C# Discord bot template.
+The first iteration of this bot was poorly coded and did not implement all of the functionality I originally intended. This rendition, built with stricter and more intuitive coding practices in mind, will eventually include newer commands and a more consistent performance.
 
-## About
+# Commands
 
-The main template targets **.NET Core** and uses the **Discord .NET** library.
+_To be added once implemented..._
 
-## How to use
+# Bot invite link
 
-* Download or Clone this repository
-* When running in VSCode, rename `App.config.template` to `App.config` and fill in the token.
-* When deploying/publishing, the application requires `<ApplicationName>.<builtExtension>.config` for example after normal .NET Core build in the same directory as your `<ApplicationName>.dll`, you have to create a `<ApplicationName>.dll.config` containing the same XML structure as `App.config.template` included in this repository.
+_To be added..._
 
-## More templates
+# Credits
 
-_If more templates are added, they will become different branches._
+* Peter, who created the bot template I forked my project from, and who created the wonderful series of tutorials on how to build a Discord bot

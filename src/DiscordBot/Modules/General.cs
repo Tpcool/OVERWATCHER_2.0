@@ -9,7 +9,7 @@ using DiscordBot.Core;
 using DiscordBot.Utilities;
 using NReco.ImageGenerator;
 
-namespace DiscordBot.Modules
+namespace DiscordBot.Core
 {
     public class General : ModuleBase<SocketCommandContext>
     {
@@ -41,23 +41,27 @@ namespace DiscordBot.Modules
                 await dm.SendMessageAsync("", false, embed.Build());
             }
         }
+        
+        //[Command("getbux", RunMode = RunMode.Async)]
+        //public async Task Getbux([Remainder]string user = "")
+        //{
+        //    SocketUser mentionedUser = Functions.GetUserWithSimilarName(user);
+        //    SocketUser target = mentionedUser ?? Context.User;
+        //    var account = UserAccounts.GetAccount(target);
 
-        // todo: set up search system without pings
-        [Command("getbux", RunMode = RunMode.Async)]
-        public async Task Getbux([Remainder]string users = "")
+        //    var embed = Functions.GetDefaultBotEmbed();
+        //    embed.WithDescription($"{target.Username} has {account.GetCurrency()} ravebux. are they imaginary? {account.IsCurrencyImaginary}.");
+        //    await Context.Channel.SendMessageAsync("", embed: embed.Build());
+        //}
+
+        [Command("wtf", RunMode = RunMode.Async)]
+        public async Task Tester([Remainder]string user = "")
         {
-            SocketUser target = null;
-            var mentionedUser = Context.Message.MentionedUsers.FirstOrDefault();
+            var foo = UserAccounts.GetAccount(Context.User);
+            foo.Currency += 1;
 
-            target = mentionedUser ?? Context.User;
-
-            var account = UserAccounts.GetAccount(target);
-            UserAccounts.GetAccount(Context.User).Ravebux += 1;
-            UserAccounts.SaveAccounts();
-
-            var embed = Functions.GetDefaultBotEmbed();
-            embed.WithDescription($"{target.Username} has {account.Ravebux} ravebux. are they imaginary? {account.IsImaginary}.");
-            await Context.Channel.SendMessageAsync("", false, embed.Build());
+            var bux = foo.Currency;
+            await Context.Channel.SendMessageAsync(bux + ".");
         }
 
         // Doesn't work??? Can't get HtmlToImageConverter object to instantiate.
@@ -82,6 +86,28 @@ namespace DiscordBot.Modules
             embed.WithDescription("👿 are you gonna react to me or what?");
             RestUserMessage msg = await Context.Channel.SendMessageAsync("", embed: embed.Build());
             Global.MessageIdToTrack = msg.Id;
+        }
+
+        [Command("level")]
+        public async Task GetLevel()
+        {
+
+        }
+
+        [Command("kick")]
+        [RequireUserPermission(GuildPermission.KickMembers)]
+        [RequireBotPermission(GuildPermission.KickMembers)]
+        public async Task KickUser(IGuildUser user, [Remainder] string reason = "No reason provided.")
+        {
+            await user.KickAsync(reason);
+        }
+
+        [Command("ban")]
+        [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireBotPermission(GuildPermission.BanMembers)]
+        public async Task BanUser(IGuildUser user, int length, [Remainder] string reason = "No reason provided.")
+        {
+            await user.Guild.AddBanAsync(user, length, reason);
         }
     }
 }

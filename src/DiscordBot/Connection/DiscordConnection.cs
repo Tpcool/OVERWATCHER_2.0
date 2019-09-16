@@ -25,10 +25,19 @@ namespace DiscordBot.Connection
             client.Log += logger.Log;
             client.Ready += RepeatingTimer.StartTimer;
             client.ReactionAdded += OnReactAdded;
+            // client.MessageReceived += OnMessageReceived;
+            // await client.SetGameAsync("you [.help]", type: ActivityType.Listening);
             await client.LoginAsync(TokenType.Bot, config.GetValueFor(Constants.ConfigKeyToken));
             await client.StartAsync();
             Global.Client = client;
         }
+
+        //private Task OnMessageReceived(SocketMessage msg)
+        //{
+        //    var user = UserAccounts.GetAccount(msg.Author);
+        //    if (user != null) user.AddCurrency(1);
+        //    return Task.CompletedTask;
+        //}
 
         private async Task OnReactAdded(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
         {

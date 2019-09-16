@@ -8,25 +8,27 @@ namespace DiscordBot.Core
 {
     public static class UserAccounts
     {
-        private static List<UserAccount> accounts;
-        private static readonly string path = @"..\..\..\SystemLang\accounts.json";
+        private static List<UserAccount> Accounts;
+        private static readonly string Path = @"..\..\..\SystemLang\accounts.json";
+
+        public static List<UserAccount> GetAccounts() => Accounts;
 
         static UserAccounts()
         {
-            if (DataStorage.SaveExists(path))
+            if (DataStorage.SaveExists(Path))
             {
-                accounts = DataStorage.LoadUserAccounts(path).ToList();
+                Accounts = DataStorage.LoadUserAccounts(Path).ToList();
             }
             else
             {
-                accounts = new List<UserAccount>();
+                Accounts = new List<UserAccount>();
                 SaveAccounts();
             }
         }
 
         public static void SaveAccounts()
         {
-            DataStorage.SaveUserAccounts(accounts, path);
+            DataStorage.SaveUserAccounts(Accounts, Path);
         }
 
         public static UserAccount GetAccount(SocketUser user)
@@ -36,7 +38,7 @@ namespace DiscordBot.Core
 
         private static UserAccount GetOrCreateAccount(ulong id)
         {
-            var result = from a in accounts
+            var result = from a in Accounts
                          where a.Id == id
                          select a;
             var account = result.FirstOrDefault();
@@ -49,11 +51,11 @@ namespace DiscordBot.Core
             var newAccount = new UserAccount()
             {
                 Id = id,
-                Ravebux = 0,
-                IsImaginary = false
+                Currency = 0,
+                IsCurrencyImaginary = false
             };
-
-            accounts.Add(newAccount);
+            
+            Accounts.Add(newAccount);
             SaveAccounts();
             return newAccount;
         }
