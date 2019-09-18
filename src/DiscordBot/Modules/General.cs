@@ -41,27 +41,17 @@ namespace DiscordBot.Core
                 await dm.SendMessageAsync("", false, embed.Build());
             }
         }
-        
-        //[Command("getbux", RunMode = RunMode.Async)]
-        //public async Task Getbux([Remainder]string user = "")
-        //{
-        //    SocketUser mentionedUser = Functions.GetUserWithSimilarName(user);
-        //    SocketUser target = mentionedUser ?? Context.User;
-        //    var account = UserAccounts.GetAccount(target);
 
-        //    var embed = Functions.GetDefaultBotEmbed();
-        //    embed.WithDescription($"{target.Username} has {account.GetCurrency()} ravebux. are they imaginary? {account.IsCurrencyImaginary}.");
-        //    await Context.Channel.SendMessageAsync("", embed: embed.Build());
-        //}
-
-        [Command("wtf", RunMode = RunMode.Async)]
-        public async Task Tester([Remainder]string user = "")
+        [Command("getbux", RunMode = RunMode.Async)]
+        public async Task Getbux([Remainder]string user = "")
         {
-            var foo = UserAccounts.GetAccount(Context.User);
-            foo.Currency += 1;
+            SocketUser mentionedUser = Context.User; //Functions.GetUserWithSimilarName(user);
+            SocketUser target = mentionedUser ?? Context.User;
+            var account = UserAccounts.GetAccount(target);
 
-            var bux = foo.Currency;
-            await Context.Channel.SendMessageAsync(bux + ".");
+            var embed = Functions.GetDefaultBotEmbed();
+            embed.WithDescription($"{target.Username} has {account.Currency} ravebux. are they imaginary? {account.IsCurrencyImaginary}.");
+            await Context.Channel.SendMessageAsync("", embed: embed.Build());
         }
 
         // Doesn't work??? Can't get HtmlToImageConverter object to instantiate.
@@ -86,12 +76,6 @@ namespace DiscordBot.Core
             embed.WithDescription("👿 are you gonna react to me or what?");
             RestUserMessage msg = await Context.Channel.SendMessageAsync("", embed: embed.Build());
             Global.MessageIdToTrack = msg.Id;
-        }
-
-        [Command("level")]
-        public async Task GetLevel()
-        {
-
         }
 
         [Command("kick")]

@@ -12,7 +12,7 @@ namespace DiscordBot.Utilities
 
         static Messages()
         {
-            string path = @"..\..\..\SystemLang\messages.json";
+            string path = Constants.Messages;
             string json = File.ReadAllText(path);
             var data = JsonConvert.DeserializeObject<dynamic>(json);
             alerts = data.ToObject<Dictionary<string, string>>();

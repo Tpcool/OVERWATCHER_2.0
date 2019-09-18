@@ -9,7 +9,7 @@ namespace DiscordBot.Core
     public static class UserAccounts
     {
         private static List<UserAccount> Accounts;
-        private static readonly string Path = @"..\..\..\SystemLang\accounts.json";
+        private static readonly string Path = Constants.Accounts;
 
         public static List<UserAccount> GetAccounts() => Accounts;
 

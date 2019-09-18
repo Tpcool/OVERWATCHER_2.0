@@ -6,22 +6,22 @@ using System.Text;
 
 namespace DiscordBot
 {
-    class DataStorage
+    class DictionaryStorage
     {
-        public static Dictionary<string, string> pairs = new Dictionary<string, string>();
-        private static readonly string path = @"..\..\..\SystemLang\storage.json";
+        public static Dictionary<string, string> Pairs = new Dictionary<string, string>();
+        private static readonly string Path = Constants.Storage;
 
-        static DataStorage()
+        static DictionaryStorage()
         {
-            if (!ValidateStorageFile(path)) return;
-            string json = File.ReadAllText(path);
-            pairs = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+            if (!ValidateStorageFile(Path)) return;
+            string json = File.ReadAllText(Path);
+            Pairs = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
         }
 
         public static void SaveData()
         {
-            string json = JsonConvert.SerializeObject(pairs, Formatting.Indented);
-            File.WriteAllText(path, json);
+            string json = JsonConvert.SerializeObject(Pairs, Formatting.Indented);
+            File.WriteAllText(Path, json);
         }
 
         private static bool ValidateStorageFile(string file)
@@ -40,7 +40,7 @@ namespace DiscordBot
         /// </summary>
         public static void AddPairToStorage(string key, string value)
         {
-            pairs.Add(key, value);
+            Pairs.Add(key, value);
             SaveData();
         }
     }

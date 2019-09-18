@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using DiscordBot.Configuration;
 using DiscordBot.Logging;
 using DiscordBot.Core;
+using System.Collections.Generic;
 
 namespace DiscordBot.Connection
 {
@@ -12,6 +13,7 @@ namespace DiscordBot.Connection
         private readonly DiscordSocketClient client;
         private readonly IConfiguration config;
         private readonly ILogger logger;
+        private readonly List<ulong> whitelist = DataStorage.LoadWhitelist(Constants.Whitelist);
 
         public DiscordConnection(DiscordSocketClient client, IConfiguration config, ILogger logger)
         {
@@ -25,19 +27,33 @@ namespace DiscordBot.Connection
             client.Log += logger.Log;
             client.Ready += RepeatingTimer.StartTimer;
             client.ReactionAdded += OnReactAdded;
-            // client.MessageReceived += OnMessageReceived;
-            // await client.SetGameAsync("you [.help]", type: ActivityType.Listening);
+            client.MessageReceived += OnMessageReceived;
+            await client.SetGameAsync("you [.help]", type: ActivityType.Listening);
             await client.LoginAsync(TokenType.Bot, config.GetValueFor(Constants.ConfigKeyToken));
             await client.StartAsync();
             Global.Client = client;
         }
 
-        //private Task OnMessageReceived(SocketMessage msg)
-        //{
-        //    var user = UserAccounts.GetAccount(msg.Author);
-        //    if (user != null) user.AddCurrency(1);
-        //    return Task.CompletedTask;
-        //}
+        private Task OnMessageReceived(SocketMessage msg)
+        {
+            if (IsValidUser(msg.Author))
+            {
+                var user = UserAccounts.GetAccount(msg.Author);
+                user.AddCurrency(1);
+            }
+            return Task.CompletedTask;
+        }
+
+        private bool IsValidUser(SocketUser user)
+        {
+            if (user == null) return false; // User must exist
+            if (!user.IsBot) return true; // Non bot users are always valid
+            foreach (ulong bot in whitelist) // Check if there some bots that are allowed to be recognized
+            {
+                if (bot == user.Id) return true;
+            }
+            return false;
+        }
 
         private async Task OnReactAdded(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
         {

@@ -10,17 +10,16 @@ namespace DiscordBot.NUnit.Tests
 {
     class MockData
     {
-        public static Mock<SocketUser> CreateMockSocketUser(string username)
+        public static Mock<IGuildUser> CreateMockIGuildUser(string username)
         {
-            var user = new Mock<SocketUser>();
+            var user = new Mock<IGuildUser>();
             user.Setup(u => u.Username).Returns(username);
             return user;
         }
 
-        // Doesn't work because can't set Id because it is not overrideable
-        public static Mock<SocketUser> CreateMockSocketUser(string username, ulong id)
+        public static Mock<IGuildUser> CreateMockIGuildUser(string username, ulong id)
         {
-            var user = new Mock<SocketUser>();
+            var user = new Mock<IGuildUser>();
             user.Setup(u => u.Username).Returns(username);
             user.Setup(u => u.Id).Returns(id);
             return user;

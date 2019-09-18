@@ -1,0 +1,50 @@
+- Legacy commands:
+.blackjack - Send cards to DMs instead of directly in channel. One player against Overwatcher.
+.count
+.decide
+.doubleornothing
+.getallbux - Top 5 all time, top 5 in server.
+.getbux - Enter another user's name for their amount.
+.givebux
+.remember
+.russianroulette
+.slots - Revert to emoji slots, increase odds, add timer.
+.sans - Retrieve from image websites using API + tags.
+.shutup - Has timer, costs bux to use.
+.stealbux
+.squarerootornothing - Successful square root on a negative amount will result in imaginary bux.
+.tripleornothing
+.undertale - Remove manual selection
+
+- New commands:
+.meme [blank/user arg] - Creates a custom meme with a random user in the server as the image overlay. E.g. Discord call prompt with "would you pick up" text.
+.killover - Over leaves the server if you pay one million bux
+.guess [user arg for guessing] - .remember, but you have to guess the author. Guess correct, you win bux. Shorter message means more bux, since it may be a harder guess. Lost small amount of bux for losing. Has a short timer, cannot be used in DMs.
+.safu [possible start for chain] - Markov chain message generator using all of Cory's logs.
+.premiumsans - Animated sans porn. Costs more bux.
+.nsfw [on/off/true/false] - Admin command. Turn on or off explicit commands, such as .sans.
+.challenge - SuperRPG++ but with different CSTSF people as classes [Raveguy - balanced, Tommy Kong, Kirby, Sans, Skype Idiot Emote, Discord Light Theme]. Replace taunt with method of stealing bux (steal more if opponent has less health and more bux). Have chef draw classes.
+.ravestory [1/2/character] - Posts a random line from the Rave Story 1/2 script.
+
+- Miscellaneous:
+Apply timers to games to prevent idling.
+
+- Long term wishlist:
+.raveloan - Gives the user a certain amount of bux for free, but the user has to pay it back or they will go in debt.
+.ravestocks - Can invest into the rave stock market, which is very volatile.
+Experiment with voice channel audio. .wakeupdonkeykong.
+Org functionality with to-be org library.
+Relay capabilities between servers.
+Set up alerts when Cory/Polar/etc. post to YouTube or the forums.
+.emojibattle - Rock Paper Scissor with emojis, but uses a ton of emojis for the prereqs.
+
+- Deprecated commands:
+.find
+.getallitems
+.getitems
+.getlog
+.getscore
+.request
+.shop
+.scream
+.setgame
