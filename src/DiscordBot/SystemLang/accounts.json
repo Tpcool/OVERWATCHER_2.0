@@ -1,12 +1,12 @@
 [
   {
     "Id": 135932162581987328,
-    "Currency": 12,
+    "Currency": 22,
     "IsCurrencyImaginary": false
   },
   {
     "Id": 462346036594212874,
-    "Currency": 2,
+    "Currency": 12,
     "IsCurrencyImaginary": false
   }
 ]

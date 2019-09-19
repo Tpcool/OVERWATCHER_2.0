@@ -5,10 +5,10 @@ namespace Tests
 {
     public class Tests
     {
-        [Test]
-        public void Bot_Test()
-        {
+        //[Test]
+        //public void Bot_Test()
+        //{
             
-        }
+        //}
     }
 }

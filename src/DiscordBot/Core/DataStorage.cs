@@ -23,11 +23,14 @@ namespace DiscordBot.Core
 
         public static List<ulong> LoadWhitelist(string path)
         {
-            if (!File.Exists(path)) return null;
+            if (!File.Exists(path)) // Create a blank whitelist if it does not already exist
+            {
+                File.WriteAllText(path, "");
+            }
             var whitelist = new List<ulong>();
             var list = File.ReadLines(path);
 
-            foreach (string f in list)
+            foreach (string f in list) // Convert each line of the file into a list of user IDs
             {
                 if (ulong.TryParse(f, out ulong id)) whitelist.Add(id);
             }

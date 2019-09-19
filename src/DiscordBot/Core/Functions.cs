@@ -48,27 +48,52 @@ namespace DiscordBot.Core
         /// </summary>
         public static SocketUser GetUserWithSimilarName(string testName)
         {
+            if (testName.Trim().Equals(string.Empty)) return null;
+
             var accounts = UserAccounts.GetAccounts();
             testName = testName.ToLower();
 
-            var result = // Retrieves the SocketUsers with similar usernames to the passed name
-                from acc in accounts
-                where Global.GetSocketUserWithId(acc.Id).Username.ToLower().Contains(testName)
-                select Global.GetSocketUserWithId(acc.Id);
+            // Retrieves the SocketUsers with similar usernames to the passed name
+            var result = from acc in accounts
+                         where Global.GetSocketUserWithId(acc.Id).Username.ToLower().Contains(testName)
+                         select Global.GetSocketUserWithId(acc.Id);
 
-            SocketUser closestName = null;
+            List<string> resultUsernames = new List<string>();
+            List<ulong> resultIds = new List<ulong>();
+
             foreach (SocketUser u in result)
             {
-                if (u.Username.ToLower().Equals(testName)) // Return if there is an equal match
+                resultUsernames.Add(u.Username);
+                resultIds.Add(u.Id);
+            }
+
+            SocketUser closestName = Global.GetSocketUserWithId(GetMatch(resultIds, resultUsernames, testName));
+            return closestName;
+        }
+
+        private static ulong GetMatch(List<ulong> ids, List<string> usernames, string testName)
+        {
+            int charDifference = int.MaxValue;
+            int tempCharDifference = 0;
+            int indexOfMatch = 0;
+            testName = testName.ToLower();
+
+            for (int i = 0; i < ids.Count(); i++)
+            {
+                string username = usernames.ElementAt(i).ToLower();
+                tempCharDifference = username.Length - testName.Length;
+
+                if (username.Equals(testName)) // Return if there is an equal match
                 {
-                    return u;
+                    return ids.ElementAt(i);
                 }
-                else if (u.Username.ToLower().Contains(testName)) // Otherwise, store the user with closest matching name
+                else if (username.Contains(testName) && tempCharDifference < charDifference) // Otherwise, store the user with closest matching name
                 {
-                    closestName = u;
+                    indexOfMatch = i;
+                    charDifference = tempCharDifference;
                 }
             }
-            return closestName;
+            return ids.ElementAt(indexOfMatch);
         }
     }
 }

@@ -45,7 +45,7 @@ namespace DiscordBot.Core
         [Command("getbux", RunMode = RunMode.Async)]
         public async Task Getbux([Remainder]string user = "")
         {
-            SocketUser mentionedUser = Context.User; //Functions.GetUserWithSimilarName(user);
+            SocketUser mentionedUser = Functions.GetUserWithSimilarName(user);
             SocketUser target = mentionedUser ?? Context.User;
             var account = UserAccounts.GetAccount(target);
 
