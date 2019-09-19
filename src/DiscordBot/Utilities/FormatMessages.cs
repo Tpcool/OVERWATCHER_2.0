@@ -14,7 +14,7 @@ namespace DiscordBot.Utilities
         /// <returns>Formatted message</returns>
         public static string GetFormattedAlert(string key, params object[] param)
         {
-            if (alerts.ContainsKey(key)) return String.Format(alerts[key], param);
+            if (alerts.ContainsKey(key)) return string.Format(alerts[key], param);
             return "";
         }
 

@@ -1,17 +1,14 @@
-﻿using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.Rest;
 using Discord.WebSocket;
 using DiscordBot.Core;
 using DiscordBot.Utilities;
-using NReco.ImageGenerator;
 
-namespace DiscordBot.Core
+namespace DiscordBot.Modules
 {
-    public class General : ModuleBase<SocketCommandContext>
+    public class GeneralCommands : ModuleBase<SocketCommandContext>
     {
         [Command("hello", RunMode = RunMode.Async)]
         public async Task Hello([Remainder]string msg)
@@ -40,18 +37,6 @@ namespace DiscordBot.Core
                 embed.WithDescription(FormatMessages.GetFormattedAlert("TestNoRoleMsg_&ROLE", role));
                 await dm.SendMessageAsync("", false, embed.Build());
             }
-        }
-
-        [Command("getbux", RunMode = RunMode.Async)]
-        public async Task Getbux([Remainder]string user = "")
-        {
-            SocketUser mentionedUser = Functions.GetUserWithSimilarName(user);
-            SocketUser target = mentionedUser ?? Context.User;
-            var account = UserAccounts.GetAccount(target);
-
-            var embed = Functions.GetDefaultBotEmbed();
-            embed.WithDescription($"{target.Username} has {account.Currency} ravebux. are they imaginary? {account.IsCurrencyImaginary}.");
-            await Context.Channel.SendMessageAsync("", embed: embed.Build());
         }
 
         // Doesn't work??? Can't get HtmlToImageConverter object to instantiate.

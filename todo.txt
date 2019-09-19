@@ -2,9 +2,9 @@
 .blackjack - Send cards to DMs instead of directly in channel. One player against Overwatcher.
 .count
 .decide
-.doubleornothing
+✓ .doubleornothing
 .getallbux - Top 5 all time, top 5 in server.
-.getbux - Enter another user's name for their amount.
+✓ .getbux - Enter another user's name for their amount.
 .givebux
 .remember
 .russianroulette
@@ -13,12 +13,11 @@
 .shutup - Has timer, costs bux to use.
 .stealbux
 .squarerootornothing - Successful square root on a negative amount will result in imaginary bux.
-.tripleornothing
+✓ .tripleornothing
 .undertale - Remove manual selection
 
 - New commands:
 .meme [blank/user arg] - Creates a custom meme with a random user in the server as the image overlay. E.g. Discord call prompt with "would you pick up" text.
-.killover - Over leaves the server if you pay one million bux
 .guess [user arg for guessing] - .remember, but you have to guess the author. Guess correct, you win bux. Shorter message means more bux, since it may be a harder guess. Lost small amount of bux for losing. Has a short timer, cannot be used in DMs.
 .safu [possible start for chain] - Markov chain message generator using all of Cory's logs.
 .premiumsans - Animated sans porn. Costs more bux.

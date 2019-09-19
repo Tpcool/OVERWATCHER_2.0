@@ -17,8 +17,14 @@ namespace DiscordBot.Core
         
         public void AddCurrency(int value)
         {
-            Currency += value;
+            _currency += value;
             UserAccounts.SaveAccounts();
+        }
+
+        public string GetFormattedCurrency()
+        {
+            string i = IsCurrencyImaginary ? "i" : "";
+            return _currency + i;
         }
     }
 }

@@ -25,6 +25,20 @@ namespace DiscordBot.NUnit.Tests
             return user;
         }
 
+        public static Mock<IUserMessage> CreateMockIUserMessage(string messageText)
+        {
+            var msg = new Mock<IUserMessage>();
+            msg.Setup(m => m.Content).Returns(messageText);
+            return msg;
+        }
+
+        public static Mock<SocketUserMessage> CreateMockSocketUserMessage(string messageText)
+        {
+            var msg = new Mock<SocketUserMessage>();
+            msg.Setup(m => m.Content).Returns(messageText);
+            return msg;
+        }
+
         public static Mock<UserAccount> CreateMockUserAccount(ulong id, int currency = 0, bool imaginary = false)
         {
             var user = new Mock<UserAccount>();

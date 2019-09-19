@@ -57,7 +57,7 @@ namespace DiscordBot.Core
             var result = from acc in accounts
                          where Global.GetSocketUserWithId(acc.Id).Username.ToLower().Contains(testName)
                          select Global.GetSocketUserWithId(acc.Id);
-
+            
             List<string> resultUsernames = new List<string>();
             List<ulong> resultIds = new List<ulong>();
 
@@ -67,7 +67,9 @@ namespace DiscordBot.Core
                 resultIds.Add(u.Id);
             }
 
-            SocketUser closestName = Global.GetSocketUserWithId(GetMatch(resultIds, resultUsernames, testName));
+            if (resultIds.Count == 0) return null;
+            ulong idMatch = GetMatch(resultIds, resultUsernames, testName);
+            SocketUser closestName = Global.GetSocketUserWithId(idMatch);
             return closestName;
         }
 
@@ -94,6 +96,11 @@ namespace DiscordBot.Core
                 }
             }
             return ids.ElementAt(indexOfMatch);
+        }
+
+        public static bool HasMentionedUsers(SocketUserMessage msg)
+        {
+            return (msg.MentionedUsers.Count == 0 && msg.MentionedRoles.Count == 0) ? false : true;
         }
     }
 }

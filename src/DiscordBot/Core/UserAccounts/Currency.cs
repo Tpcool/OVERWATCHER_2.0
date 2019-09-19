@@ -41,5 +41,13 @@ namespace DiscordBot.Core
             accountToGive.AddCurrency(amount * -1);
             accountToTake.AddCurrency(amount);
         }
+
+        /// <summary>
+        /// If the user's balance meets the conditions for losing its imaginary status, it will revert.
+        /// </summary>
+        public static void TryRevertImaginary(UserAccount acct)
+        {
+            if (acct.IsCurrencyImaginary && acct.Currency <= 0) acct.IsCurrencyImaginary = false;
+        }
     }
 }

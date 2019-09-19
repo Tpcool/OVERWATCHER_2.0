@@ -41,7 +41,7 @@ namespace Tests
         [Test]
         public void GetWhitelist_Test()
         {
-            string path = @"Q:\Desktop\Programming\OVER_W4TCHER 2.0\src\DiscordBot\SystemLang\testwhitelist.txt";
+            string path = @"..\..\..\..\DiscordBot\SystemLang\testwhitelist.txt";
             List<ulong> actual = DataStorage.LoadWhitelist(path);
             List<ulong> expected = new List<ulong>()
             {
@@ -51,5 +51,6 @@ namespace Tests
 
             Assert.AreEqual(expected, actual);
         }
+
     }
 }
