@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Utilities;
 using System;
@@ -101,6 +102,45 @@ namespace DiscordBot.Core
         public static bool HasMentionedUsers(SocketUserMessage msg)
         {
             return (msg.MentionedUsers.Count == 0 && msg.MentionedRoles.Count == 0) ? false : true;
+        }
+
+        public struct HelpEntry
+        {
+            public string name;
+            public string category;
+            public string parameters;
+            public string description;
+        }
+
+        /// <summary>
+        /// Returns a list of dictionaries with the category of the command as a key and the command itself as the value.
+        /// </summary>
+        public static List<HelpEntry> GetHelpList(CommandService cmd)
+        {
+            var helpEntries = new List<HelpEntry>();
+
+            foreach(var command in cmd.Commands)
+            {
+                string paramDescription = "";
+                foreach(var param in command.Parameters)
+                {
+                    if (param.Name.Equals("nothing")) break; // Break if the parameter exists just to allow users to type after the command without consequence.
+                    paramDescription += $"[{param.Name}]";
+                    if (param.IsOptional) paramDescription += "*";
+                    paramDescription += ", ";
+                }
+                paramDescription.TrimEnd(',', ' ');
+
+                HelpEntry entry = new HelpEntry
+                {
+                    name = command.Name,
+                    category = command.Remarks,
+                    parameters = paramDescription,
+                    description = command.Summary
+                };
+                helpEntries.Add(entry);
+            }
+            return helpEntries;
         }
     }
 }

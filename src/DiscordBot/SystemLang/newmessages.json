@@ -1,0 +1,11 @@
+{
+	"system.game": "you 😈 [.help]"
+	
+	"command.ping": "don't ping people asshole. just type their username."
+
+	"currency": "ravebux"
+	"currency.suffix": "bux"
+	"currency.lose": "you lost all your cash lmao"
+	"currency.get(user, currency)": "`{0}` has `{1}` \"currency\"."
+	"currency.has(user, currency)": "`{0}` now has `{1}` \"currency\"."
+}

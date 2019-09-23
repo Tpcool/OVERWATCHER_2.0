@@ -15,7 +15,8 @@ namespace DiscordBot.Modules
     {
         private Random _rndm = new Random();
 
-        [Command("getbux", RunMode = RunMode.Async)]
+        [Command("getbux"), Remarks("currency"),
+            Summary("Displays how much currency you have, or of the user specified.")]
         public async Task Getbux([Remainder]string user = "")
         {
             if (Functions.HasMentionedUsers(Context.Message))
@@ -26,12 +27,12 @@ namespace DiscordBot.Modules
             SocketUser mentionedUser = Functions.GetUserWithSimilarName(user);
             SocketUser target = mentionedUser ?? Context.User;
             var account = UserAccounts.GetAccount(target);
-            string i = account.IsCurrencyImaginary ? "i" : "";
 
             await Context.Channel.SendMessageAsync($"`{target.Username.ToLower()}` has `{account.GetFormattedCurrency()}` ravebux.");
         }
 
-        [Command("doubleornothing", RunMode = RunMode.Async)]
+        [Command("doubleornothing"), Remarks("currency"),
+            Summary("A 1/2 chance of doubling your currency. If it fails, your currency is reset.")]
         public async Task DoubleOrNothing([Remainder]string nothing = "")
         {
             SocketUser user = Context.User;
@@ -53,7 +54,8 @@ namespace DiscordBot.Modules
             await Context.Channel.SendMessageAsync(msg);
         }
 
-        [Command("tripleornothing", RunMode = RunMode.Async)]
+        [Command("tripleornothing"), Remarks("currency"),
+            Summary("A 1/3 chance of tripling your currency. If it fails, your currency is reset.")]
         public async Task TripleOrNothing([Remainder]string nothing = "")
         {
             SocketUser user = Context.User;

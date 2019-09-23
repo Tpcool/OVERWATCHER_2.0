@@ -28,7 +28,7 @@ namespace DiscordBot.Connection
             client.Ready += RepeatingTimer.StartTimer;
             client.ReactionAdded += OnReactAdded;
             client.MessageReceived += OnMessageReceived;
-            await client.SetGameAsync("you [.help]", type: ActivityType.Listening);
+            await client.SetGameAsync("you 😈 [.help]", type: ActivityType.Listening);
             await client.LoginAsync(TokenType.Bot, config.GetValueFor(Constants.ConfigKeyToken));
             await client.StartAsync();
             Global.Client = client;
