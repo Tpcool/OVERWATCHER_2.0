@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Discord;
@@ -13,7 +14,7 @@ namespace DiscordBot.Modules
 {
     public class GeneralCommands : ModuleBase<SocketCommandContext>
     {
-        private CommandService _cmd;
+        private readonly CommandService _cmd;
 
         public GeneralCommands(CommandService cmd)
         {
@@ -26,8 +27,7 @@ namespace DiscordBot.Modules
         {
             StringBuilder commandList = new StringBuilder(Constants.CharacterLimit);
             var commands = Functions.GetHelpList(_cmd);
-            command = command.ToLower().Trim();
-            if (command.StartsWith('.')) command = command.Substring(1); // todo: replace hardcoded command prefix
+            command = command.ToLower().Trim().Trim('.'); // todo: replace hardcoded command prefix
 
             if (!command.Equals("")) //todo: condense ifelse branch?
             {
@@ -35,21 +35,26 @@ namespace DiscordBot.Modules
                 {
                     if (entry.name.Equals(command))
                     {
-                        commandList.Append($"{entry.category} command\n`.{entry.name} {entry.parameters}`\n{entry.description}");
+                        commandList.Append($"`.{entry.name} {entry.parameters}`, {entry.category} command\n{entry.description}");
                         break;
                     }
                 }
                 if (commandList.Equals(""))
                 {
-                    commandList.Append($"The .{command} command could not be found.");
+                    commandList.Append($"The `.{command}` command could not be found.");
                 }
             }
             else
             {
+                string previousCategory = "";
+                commands = commands.OrderBy(c => c.category).ToList();
                 foreach (var entry in commands)
                 {
-                    commandList.Append($"{entry.category}: .{entry.name}\n");
+                    if (!previousCategory.Equals(entry.category)) commandList.Append($"\n\n{entry.category} commands:\n");
+                    commandList.Append($"`.{entry.name}` ");
+                    previousCategory = entry.category;
                 }
+                commandList.Append($"\n\nEnter `.help [command]*` for more info. 😈 Optional parameters are marked with an asterisk.");
             }
 
             await Context.Channel.SendMessageAsync(commandList.ToString());

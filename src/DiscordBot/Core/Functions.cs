@@ -21,7 +21,7 @@ namespace DiscordBot.Core
             ulong roleId = result.FirstOrDefault();
             if (roleId == 0)
             {
-                Console.WriteLine(Utilities.FormatMessages.GetFormattedAlert("ErrorRole_&ROLE", roleName));
+                Console.WriteLine($"Cannot find role {roleName} in channel.");
                 return false;
             }
             var targetRole = user.Guild.GetRole(roleId);
@@ -31,7 +31,7 @@ namespace DiscordBot.Core
         public static EmbedBuilder GetDefaultBotEmbed(BotEmbedColor color = BotEmbedColor.Light)
         {
             var embed = new EmbedBuilder();
-            embed.WithTitle(FormatMessages.GetFormattedAlert("DefaultTitle"));
+            embed.WithTitle(FormatMessages.GetFormattedAlert("system.defaultEmbed"));
             switch (color)
             {
                 case BotEmbedColor.Light:
@@ -129,7 +129,7 @@ namespace DiscordBot.Core
                     if (param.IsOptional) paramDescription += "*";
                     paramDescription += ", ";
                 }
-                paramDescription.TrimEnd(',', ' ');
+                paramDescription = paramDescription.TrimEnd(' ').TrimEnd(',');
 
                 HelpEntry entry = new HelpEntry
                 {
