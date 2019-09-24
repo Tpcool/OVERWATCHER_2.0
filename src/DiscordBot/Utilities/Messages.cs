@@ -29,7 +29,7 @@ namespace DiscordBot.Utilities
         /// <param name="key">Message to retrieve</param>
         /// <param name="param">Parameters for the message</param>
         /// <returns>Formatted message</returns>
-        public static string GetFormattedAlert(string key, params object[] param)
+        public static string GetAlert(string key, params object[] param)
         {
             if (alerts.ContainsKey(key)) return string.Format(alerts[key], param);
             return "";
@@ -41,9 +41,9 @@ namespace DiscordBot.Utilities
         /// <param name="key">Message to retrieve</param>
         /// <param name="param">Parameter for the message</param>
         /// <returns>Formatted message</returns>
-        public static string GetFormattedAlert(string key, object param)
+        public static string GetAlert(string key, object param)
         {
-            return GetFormattedAlert(key, new object[] { param });
+            return GetAlert(key, new object[] { param });
         }
 
         public static void DisplayAlerts()

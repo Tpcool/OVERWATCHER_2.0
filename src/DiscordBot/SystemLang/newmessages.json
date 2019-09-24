@@ -1,12 +1,12 @@
 {
-	"system.game": "you 😈 [.help]"
-	"system.defaultEmbed": "MESSAGE FROM OVERWATCHER"
+	"System.Game": "you 😈 [.help]"
+	"System.DefaultEmbed": "MESSAGE FROM OVERWATCHER"
 	
-	"command.ping": "don't ping people asshole. just type their username."
+	"Command.Ping": "don't ping people asshole. just type their username."
 
-	"currency": "ravebux"
-	"currency.suffix": "bux"
-	"currency.lose": "you lost all your cash lmao"
-	"currency.get(user, currency)": "`{0}` has `{1}` \"currency\"."
-	"currency.has(user, currency)": "`{0}` now has `{1}` \"currency\"."
+	"Currency": "ravebux"
+	"Currency.Suffix": "bux"
+	"Currency.Lose": "you lost all your cash lmao"
+	"Currency.Get(user, currency)": "`{0}` has `{1}` \"currency\"."
+	"Currency.Has(user, currency)": "`{0}` now has `{1}` \"currency\"."
 }

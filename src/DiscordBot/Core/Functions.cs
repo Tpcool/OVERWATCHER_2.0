@@ -31,7 +31,7 @@ namespace DiscordBot.Core
         public static EmbedBuilder GetDefaultBotEmbed(BotEmbedColor color = BotEmbedColor.Light)
         {
             var embed = new EmbedBuilder();
-            embed.WithTitle(FormatMessages.GetFormattedAlert("system.defaultEmbed"));
+            embed.WithTitle(Messages.GetAlert("System.DefaultEmbed"));
             switch (color)
             {
                 case BotEmbedColor.Light:
