@@ -1,10 +1,13 @@
-﻿{
-  "DefaultTitle": "MESSAGE FROM OVERWATCHER",
-  "TestMsg_&MSG": "😈 thank you for your message. it reads: \"{0}\"",
-  "TestImg": "https://cdn.discordapp.com/attachments/366011888779264002/613929675269603338/over.gif",
-  "TestRole": "Emotes",
-  "TestRoleMsg_&ROLE": "😈 how cool... you have the {0} role.",
-  "TestNoRoleMsg_&ROLE": "👿 hmm... seems you are missing the {0} role. shame.",
+{
+	"System.Game": "you 😈 [.help]",
+	"System.DefaultEmbed": "MESSAGE FROM OVERWATCHER",
+	
+	"Command.Prefix": ".",
+	"Command.Ping": "don't ping people asshole. just type their username.",
 
-  "ErrorRole_&ROLE": "Cannot find role \"{0}\" in channel."
+	"Currency": "ravebux",
+	"Currency.Suffix": "bux",
+	"Currency.Lose": "you lost all your cash lmao",
+	"Currency.Get(user, currency, cName)": "`{0}` has `{1}` {2}.",
+	"Currency.Has(user, currency, cName)": "`{0}` now has `{1}` {2}."
 }

@@ -5,6 +5,7 @@ using DiscordBot.Configuration;
 using DiscordBot.Logging;
 using DiscordBot.Core;
 using System.Collections.Generic;
+using DiscordBot.Utilities;
 
 namespace DiscordBot.Connection
 {
@@ -28,7 +29,7 @@ namespace DiscordBot.Connection
             client.Ready += RepeatingTimer.StartTimer;
             client.ReactionAdded += OnReactAdded;
             client.MessageReceived += OnMessageReceived;
-            await client.SetGameAsync("you 😈 [.help]", type: ActivityType.Listening);
+            await client.SetGameAsync(Messages.GetAlert("System.Game"), type: ActivityType.Listening);
             await client.LoginAsync(TokenType.Bot, config.GetValueFor(Constants.ConfigKeyToken));
             await client.StartAsync();
             Global.Client = client;

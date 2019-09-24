@@ -19,16 +19,17 @@ namespace DiscordBot.Modules
             Summary("Displays how much currency you have, or of the user specified.")]
         public async Task Getbux([Remainder]string user = "")
         {
+            string currency = Messages.GetAlert("Currency");
             if (Functions.HasMentionedUsers(Context.Message))
             {
-                await Context.Channel.SendMessageAsync("don't ping people asshole. just type their username.");
+                await Context.Channel.SendMessageAsync(Messages.GetAlert("Command.Ping"));
                 return;
             }
             SocketUser mentionedUser = Functions.GetUserWithSimilarName(user);
             SocketUser target = mentionedUser ?? Context.User;
             var account = UserAccounts.GetAccount(target);
 
-            await Context.Channel.SendMessageAsync($"`{target.Username.ToLower()}` has `{account.GetFormattedCurrency()}` ravebux.");
+            await Context.Channel.SendMessageAsync($"`{target.Username.ToLower()}` has `{account.GetFormattedCurrency()}` {currency}.");
         }
 
         [Command("doubleornothing"), Remarks("currency"),
@@ -37,17 +38,18 @@ namespace DiscordBot.Modules
         {
             SocketUser user = Context.User;
             UserAccount userAccount = UserAccounts.GetAccount(user);
-            string msg;
+            string msg, currency = Messages.GetAlert("Currency");
 
             if (_rndm.Next(2) == 0)
             {
                 userAccount.Currency *= 2;
-                msg = $"you have successfully doubled your RAVEBUX! `{user.Username}` now has `{userAccount.GetFormattedCurrency()}` ravebux.";
+                msg = $"you have successfully doubled your {currency.ToUpper()}! ";
+                msg += Messages.GetAlert("Currency.Has(user, currency, cName)", user.Username.ToLower(), userAccount.GetFormattedCurrency(), currency);
             }
             else
             {
                 userAccount.Currency = 0;
-                msg = "you lost all your cash lmao";
+                msg = Messages.GetAlert("Currency.Lose");
             }
 
             Currency.TryRevertImaginary(userAccount);
@@ -60,17 +62,18 @@ namespace DiscordBot.Modules
         {
             SocketUser user = Context.User;
             UserAccount userAccount = UserAccounts.GetAccount(user);
-            string msg;
+            string msg, currency = Messages.GetAlert("Currency");
 
             if (_rndm.Next(3) == 0)
             {
                 userAccount.Currency *= 3;
-                msg = $"you have successfully TRIPPLED your RAVEBUX!!! `{user.Username}` now has `{userAccount.GetFormattedCurrency()}` ravebux.";
+                msg = $"you have successfully TRIPPLED your {currency.ToUpper()}!!!";
+                msg += Messages.GetAlert("Currency.Has(user, currency, cName)", user.Username.ToLower(), userAccount.GetFormattedCurrency(), currency);
             }
             else
             {
                 userAccount.Currency = 0;
-                msg = "you lost all your cash lmao";
+                msg = Messages.GetAlert("Currency.Lose");
             }
 
             Currency.TryRevertImaginary(userAccount);

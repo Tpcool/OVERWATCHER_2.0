@@ -26,35 +26,36 @@ namespace DiscordBot.Modules
         public async Task Help([Remainder]string command = "")
         {
             StringBuilder commandList = new StringBuilder(Constants.CharacterLimit);
+            char prefix = Messages.GetAlert("Command.Prefix")[0];
             var commands = Functions.GetHelpList(_cmd);
-            command = command.ToLower().Trim().Trim('.'); // todo: replace hardcoded command prefix
+            command = command.ToLower().Trim().Trim(prefix);
 
-            if (!command.Equals("")) //todo: condense ifelse branch?
+            if (!command.Equals("")) // Handles the command with a parameter.
             {
-                foreach (var entry in commands)
+                foreach (var entry in commands) 
                 {
-                    if (entry.name.Equals(command))
+                    if (entry.name.Equals(command)) // Add description of command if a match is found.
                     {
-                        commandList.Append($"`.{entry.name} {entry.parameters}`, {entry.category} command\n{entry.description}");
+                        commandList.Append($"`{prefix}{entry.name} {entry.parameters}` {entry.category} command\n{entry.description}");
                         break;
                     }
                 }
-                if (commandList.Equals(""))
+                if (commandList.Equals("")) // Add message if the command does not exist.
                 {
-                    commandList.Append($"The `.{command}` command could not be found.");
+                    commandList.Append($"The `{prefix}{command}` command could not be found.");
                 }
             }
-            else
+            else // Handles if the command is entered with no parameters.
             {
                 string previousCategory = "";
                 commands = commands.OrderBy(c => c.category).ToList();
                 foreach (var entry in commands)
                 {
-                    if (!previousCategory.Equals(entry.category)) commandList.Append($"\n\n{entry.category} commands:\n");
-                    commandList.Append($"`.{entry.name}` ");
+                    if (!previousCategory.Equals(entry.category)) commandList.Append($"\n\n{entry.category} commands:\n"); // Set up new section for that command type.
+                    commandList.Append($"`{prefix}{entry.name}` ");
                     previousCategory = entry.category;
                 }
-                commandList.Append($"\n\nEnter `.help [command]*` for more info. 😈 Optional parameters are marked with an asterisk.");
+                commandList.Append($"\n\nEnter `{prefix}help [command]*` for more info. 😈 Optional parameters are marked with an asterisk.");
             }
 
             await Context.Channel.SendMessageAsync(commandList.ToString());
