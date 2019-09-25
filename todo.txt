@@ -6,6 +6,7 @@
 .getallbux - Top 5 all time, top 5 in server.
 ✓ .getbux - Enter another user's name for their amount.
 .givebux
+✓ .help
 .remember
 .russianroulette
 .slots - Revert to emoji slots, increase odds, add timer.
@@ -47,3 +48,5 @@ Set up alerts when Cory/Polar/etc. post to YouTube or the forums.
 .shop
 .scream
 .setgame
+
+Bot invite: https://discordapp.com/api/oauth2/authorize?client_id=462346036594212874&scope=bot&permissions=8

@@ -6,6 +6,7 @@ using DiscordBot.Logging;
 using DiscordBot.Core;
 using System.Collections.Generic;
 using DiscordBot.Utilities;
+using System;
 
 namespace DiscordBot.Connection
 {
@@ -33,6 +34,7 @@ namespace DiscordBot.Connection
             await client.LoginAsync(TokenType.Bot, config.GetValueFor(Constants.ConfigKeyToken));
             await client.StartAsync();
             Global.Client = client;
+            ConsoleTools.ConsoleInput();
         }
 
         private Task OnMessageReceived(SocketMessage msg)
