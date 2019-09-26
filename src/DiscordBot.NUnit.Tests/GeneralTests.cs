@@ -8,6 +8,7 @@ using DiscordBot.NUnit.Tests;
 using Discord.WebSocket;
 using DiscordBot;
 using Discord;
+using System.IO;
 
 namespace Tests
 {
@@ -50,6 +51,12 @@ namespace Tests
             };
 
             Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void GetBlacklist()
+        {
+            if (!File.Exists(Constants.LogBlacklist)) File.Create(Constants.LogBlacklist); //File.WriteAllText(Constants.LogBlacklist, "");
         }
 
     }
