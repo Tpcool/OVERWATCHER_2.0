@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection;
 
 namespace DiscordBot.Connection
 {
@@ -23,7 +24,17 @@ namespace DiscordBot.Connection
         [Command("help", "Displays a list of all commands.")]
         private void HelpMethod()
         {
-
+            PropertyInfo[] properties = typeof(ConsoleTools).GetProperties();
+            foreach (PropertyInfo prop in properties)
+            {
+                foreach (object attribute in prop.GetCustomAttributes())
+                {
+                    if (attribute is CommandAttribute cmd)
+                    {
+                        Console.WriteLine($".{cmd.Name} - {cmd.Info}");
+                    }
+                }
+            }
         }
 
         [Command("log", "Creates or updates the list of logs for each server the bot is in.")]
@@ -90,15 +101,13 @@ namespace DiscordBot.Connection
     [AttributeUsage(AttributeTargets.Method)]
     internal class CommandAttribute : Attribute
     {
-        private readonly Dictionary<string, string> _helpList = new Dictionary<string, string>();
-        private readonly string _name;
-        private readonly string _info;
+        public readonly string Name;
+        public readonly string Info;
 
         public CommandAttribute(string name, string info)
         {
-            _name = name;
-            _info = info;
-            _helpList.Add(name, info);
+            Name = name;
+            Info = info;
         }
     }
 }
