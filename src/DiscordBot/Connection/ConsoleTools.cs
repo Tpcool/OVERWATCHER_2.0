@@ -18,18 +18,31 @@ namespace DiscordBot.Connection
             {
                 Console.WriteLine("Awaiting console command.");
                 input = Console.ReadLine().ToLower().Trim();
+                //if (input.Equals(".help")) HelpMethod();
+
+                var methods = typeof(ConsoleTools).GetRuntimeMethods();
+                foreach (MethodInfo method in methods)
+                {
+                    foreach (Attribute attr in method.GetCustomAttributes())
+                    {
+                        if (attr is CommandAttribute cmd && ("." + cmd.Name).Equals(input))
+                        {
+                            method.Invoke(method, new object[] { });
+                        }
+                    }
+                }
             }
         }
 
         [Command("help", "Displays a list of all commands.")]
-        private void HelpMethod()
+        private static void HelpMethod()
         {
-            PropertyInfo[] properties = typeof(ConsoleTools).GetProperties();
-            foreach (PropertyInfo prop in properties)
+            var methods = typeof(ConsoleTools).GetRuntimeMethods();
+            foreach (MethodInfo method in methods)
             {
-                foreach (object attribute in prop.GetCustomAttributes())
+                foreach (Attribute attr in method.GetCustomAttributes())
                 {
-                    if (attribute is CommandAttribute cmd)
+                    if (attr is CommandAttribute cmd)
                     {
                         Console.WriteLine($".{cmd.Name} - {cmd.Info}");
                     }
@@ -38,9 +51,10 @@ namespace DiscordBot.Connection
         }
 
         [Command("log", "Creates or updates the list of logs for each server the bot is in.")]
-        private void LogMethod()
+        private static void LogMethod()
         {
             // Global.Client.Guilds;
+            Console.WriteLine("Log method");
         }
 
         [Command("blacklist", "PARAM: Channel ID. Toggles the channels in the log's blacklist.")]
