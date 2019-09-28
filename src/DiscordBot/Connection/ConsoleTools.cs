@@ -16,22 +16,39 @@ namespace DiscordBot.Connection
             string input = "";
             while (true)
             {
-                Console.WriteLine("Awaiting console command.");
                 input = Console.ReadLine().ToLower().Trim();
-                //if (input.Equals(".help")) HelpMethod();
+                if (!input.StartsWith('.') && !(input.Length > 1)) continue;
+                else input = input.Substring(1);
 
+                var parameters = GetParams(input);
                 var methods = typeof(ConsoleTools).GetRuntimeMethods();
                 foreach (MethodInfo method in methods)
                 {
                     foreach (Attribute attr in method.GetCustomAttributes())
                     {
-                        if (attr is CommandAttribute cmd && ("." + cmd.Name).Equals(input))
+                        if (attr is CommandAttribute cmd && input.StartsWith(cmd.Name))
                         {
-                            method.Invoke(method, new object[] { });
+                            try
+                            {
+                                method.Invoke(null, parameters);
+                            }
+                            catch (ArgumentException)
+                            {
+                                Console.WriteLine("Invalid paramters.");
+                            }
                         }
                     }
                 }
             }
+        }
+
+        private static object[] GetParams(string input)
+        {
+            // todo: dispose of index 0, the command
+            if (input.Contains(' ')) input = input.Substring(input.IndexOf(' '));
+            else return new object[] { };
+            object[] list = input.Split(',', options: StringSplitOptions.RemoveEmptyEntries);
+            return list;
         }
 
         [Command("help", "Displays a list of all commands.")]
