@@ -14,13 +14,15 @@ namespace DiscordBot.Connection
         public static async Task ConsoleInput()
         {
             string input = "";
+            ConsoleTools obj = new ConsoleTools();
+
             while (true)
             {
                 input = Console.ReadLine().ToLower().Trim();
                 if (!input.StartsWith('.') && !(input.Length > 1)) continue;
                 else input = input.Substring(1);
 
-                var parameters = GetParams(input);
+                var parameters = obj.GetParams(input);
                 var methods = typeof(ConsoleTools).GetRuntimeMethods();
                 foreach (MethodInfo method in methods)
                 {
@@ -28,11 +30,12 @@ namespace DiscordBot.Connection
                     {
                         if (attr is CommandAttribute cmd && input.StartsWith(cmd.Name))
                         {
+                            parameters = obj.ConvertParams(parameters, method);
                             try
                             {
-                                method.Invoke(null, parameters);
+                                method.Invoke(obj, parameters);
                             }
-                            catch (ArgumentException)
+                            catch (TargetParameterCountException)
                             {
                                 Console.WriteLine("Invalid paramters.");
                             }
@@ -42,17 +45,37 @@ namespace DiscordBot.Connection
             }
         }
 
-        private static object[] GetParams(string input)
+        private object[] GetParams(string input)
         {
-            // todo: dispose of index 0, the command
             if (input.Contains(' ')) input = input.Substring(input.IndexOf(' '));
             else return new object[] { };
-            object[] list = input.Split(',', options: StringSplitOptions.RemoveEmptyEntries);
+            string[] list = input.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < list.Length; i++) list[i] = list[i].Trim();
             return list;
         }
 
+        private object[] ConvertParams(object[] parameters, MethodInfo method)
+        {
+            int i = 0;
+            object[] newParams = new object[parameters.Length];
+            foreach (var param in method.GetParameters())
+            {
+                if (i >= parameters.Length) return parameters;
+                try
+                {
+                    newParams[i] = Convert.ChangeType(parameters[i], param.ParameterType);
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine($"Unable to convert parameter \"{parameters[i]}\" to {param.ParameterType}.");
+                }
+                i += 1;
+            }
+            return newParams;
+        }
+
         [Command("help", "Displays a list of all commands.")]
-        private static void HelpMethod()
+        private void HelpMethod()
         {
             var methods = typeof(ConsoleTools).GetRuntimeMethods();
             foreach (MethodInfo method in methods)
@@ -68,10 +91,10 @@ namespace DiscordBot.Connection
         }
 
         [Command("log", "Creates or updates the list of logs for each server the bot is in.")]
-        private static void LogMethod()
+        private void LogMethod(int a, ulong b, char c)
         {
             // Global.Client.Guilds;
-            Console.WriteLine("Log method");
+            Console.WriteLine(a + " " + b + " " + c);
         }
 
         [Command("blacklist", "PARAM: Channel ID. Toggles the channels in the log's blacklist.")]
@@ -126,6 +149,12 @@ namespace DiscordBot.Connection
                 }
             }
             if (msg.Equals(string.Empty)) Console.WriteLine("The blacklist only has invalid entries.");
+        }
+
+        [Command("block", "Toggles the bot on/off so it can only listen to console commands.")]
+        private void BlockCommand()
+        {
+
         }
     }
 
