@@ -11,6 +11,8 @@ namespace DiscordBot.Connection
 {
     internal class ConsoleTools
     {
+        private static readonly char prefix = Constants.CmdPrefix[0];
+
         public static async Task ConsoleInput()
         {
             string input = "";
@@ -18,10 +20,12 @@ namespace DiscordBot.Connection
 
             while (true)
             {
+                // Retrieves input and, if it is a command, attempts to format it to be parsed.
                 input = Console.ReadLine().ToLower().Trim();
-                if (!input.StartsWith('.') && !(input.Length > 1)) continue;
+                if (!input.StartsWith(prefix) && !(input.Length > 1)) continue;
                 else input = input.Substring(1);
 
+                // Gets parameters and methods, and attempts to invoke a method if it matches the inputted command.
                 var parameters = obj.GetParams(input);
                 var methods = typeof(ConsoleTools).GetRuntimeMethods();
                 foreach (MethodInfo method in methods)
@@ -47,6 +51,7 @@ namespace DiscordBot.Connection
 
         private object[] GetParams(string input)
         {
+            // Isolates the parameters by removing the command and saving the split and trimmed input to an array.
             if (input.Contains(' ')) input = input.Substring(input.IndexOf(' '));
             else return new object[] { };
             string[] list = input.Split(',', StringSplitOptions.RemoveEmptyEntries);
@@ -56,6 +61,7 @@ namespace DiscordBot.Connection
 
         private object[] ConvertParams(object[] parameters, MethodInfo method)
         {
+            // Attempts to convert the inputted objects into each of the method's data types.
             int i = 0;
             object[] newParams = new object[parameters.Length];
             foreach (var param in method.GetParameters())
@@ -77,6 +83,7 @@ namespace DiscordBot.Connection
         [Command("help", "Displays a list of all commands.")]
         private void HelpMethod()
         {
+            // Cycles through all methods and locates the attribute that contains the command info to display.
             var methods = typeof(ConsoleTools).GetRuntimeMethods();
             foreach (MethodInfo method in methods)
             {
@@ -84,28 +91,36 @@ namespace DiscordBot.Connection
                 {
                     if (attr is CommandAttribute cmd)
                     {
-                        Console.WriteLine($".{cmd.Name} - {cmd.Info}");
+                        Console.WriteLine($"{prefix}{cmd.Name} - {cmd.Info}");
                     }
                 }
             }
         }
 
-        [Command("log", "Creates or updates the list of logs for each server the bot is in.")]
-        private void LogMethod(int a, ulong b, char c)
+        [Command("block", "Toggles the bot on/off so it can only listen to console commands.")]
+        private void BlockCommand()
         {
-            // Global.Client.Guilds;
-            Console.WriteLine(a + " " + b + " " + c);
+
+        }
+
+        [Command("log", "Creates or updates the list of logs for each server the bot is in.")]
+        private void LogMethod()
+        {
+
         }
 
         [Command("blacklist", "PARAM: Channel ID. Toggles the channels in the log's blacklist.")]
         private void LogBlacklistMethod(ulong id)
         {
+            // Tries to store the given ID as a channel, provides feedback if it is not.
             IChannel channel = Global.GetSocketChannelWithId(id);
             if (channel == null)
             {
                 Console.WriteLine("Not a valid channel ID.");
                 return;
             }
+
+            // Writes the ID to a new file if it does not exist, otherwise toggles ID in current list and saves.
             string blacklist = Constants.LogBlacklist;
             string idString = id.ToString();
             if (!File.Exists(blacklist)) File.WriteAllText(blacklist, idString);
@@ -129,32 +144,39 @@ namespace DiscordBot.Connection
         [Command("displayblacklist", "Displays the list of channels currently being blacklisted.")]
         private void DisplayBlacklistMethod()
         {
-            string blacklist = Constants.LogBlacklist;
-            if (!File.Exists(blacklist) || File.ReadAllText(blacklist).Equals(string.Empty))
+            // Get the list and provide feedback if it is null.
+            List<ulong> list = GetBlacklist();
+            if (list == null)
             {
-                Console.WriteLine("No channels have been blacklisted.");
+                Console.WriteLine("Blacklist is empty or does not exist.");
                 return;
             }
-            List<string> list = File.ReadLines(blacklist).ToList();
+
+            // Cycles through each channel and finds valid info to display.
             string msg = "";
-            foreach (string channel in list)
+            foreach (uint id in list)
             {
-                if (uint.TryParse(channel, out uint id))
-                {
-                    IChannel currentChannel = Global.GetSocketChannelWithId(id);
-                    if (currentChannel != null)
-                    {
-                        msg += $"{id} - {currentChannel.Name}\n";
-                    }
-                }
+                IChannel currentChannel = Global.GetSocketChannelWithId(id);
+                if (currentChannel != null) msg += $"{id} - {currentChannel.Name}\n";
             }
-            if (msg.Equals(string.Empty)) Console.WriteLine("The blacklist only has invalid entries.");
+            if (msg.Equals(string.Empty)) msg = "The blacklist only has invalid entries.";
+            Console.WriteLine(msg);
         }
 
-        [Command("block", "Toggles the bot on/off so it can only listen to console commands.")]
-        private void BlockCommand()
+        private List<ulong> GetBlacklist()
         {
+            // Return a null list if it does not exist or is empty.
+            string blacklist = Constants.LogBlacklist;
+            if (!File.Exists(blacklist) || File.ReadAllText(blacklist).Equals(string.Empty)) return null;
 
+            // Get the list of channel IDs, convert them to ulongs, store in list.
+            List<string> stringList = File.ReadLines(blacklist).ToList();
+            List<ulong> channelList = new List<ulong>(stringList.Count);
+            foreach (string channel in stringList)
+            {
+                if (ulong.TryParse(channel, out ulong id)) channelList.Add(id);
+            }
+            return channelList;
         }
     }
 
