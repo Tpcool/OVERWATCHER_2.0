@@ -4,6 +4,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Configuration;
 using DiscordBot.Logging;
+using DiscordBot.Utilities;
 
 namespace DiscordBot.Handlers
 {
@@ -33,7 +34,7 @@ namespace DiscordBot.Handlers
             if (!(s is SocketUserMessage msg)) return;
             
             var argPos = 0;
-            if (msg.HasStringPrefix(config.GetValueFor(Constants.CmdPrefix), ref argPos) || msg.HasMentionPrefix(client.CurrentUser, ref argPos))
+            if (msg.HasStringPrefix(Messages.GetAlert("System.Prefix"), ref argPos) || msg.HasMentionPrefix(client.CurrentUser, ref argPos))
             {
                 var context = new SocketCommandContext(client, msg);
                 await TryRunAsBotCommand(context, argPos).ConfigureAwait(false);

@@ -20,6 +20,8 @@ namespace DiscordBot.Modules
             Summary("Posts a random message in the current server's log.")]
         public async Task Remember(string phrase = "", string user = "")
         {
+            //Don't allow command to initiate in DMs
+
             //var msgs = await Context.Channel.GetMessagesAsync(Context.Message, Direction.Before, 100).FlattenAsync();
             var mess = await Context.Channel.GetMessagesAsync(500000).FlattenAsync();
             var msgList = mess.ToList();

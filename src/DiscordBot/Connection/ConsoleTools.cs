@@ -6,12 +6,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
+using DiscordBot.Utilities;
+using Discord.WebSocket;
 
 namespace DiscordBot.Connection
 {
     internal class ConsoleTools
     {
-        private static readonly char prefix = Constants.CmdPrefix[0];
+        private static readonly char prefix = Messages.GetAlert("System.Prefix")[0];
 
         public static async Task ConsoleInput()
         {
@@ -22,7 +24,7 @@ namespace DiscordBot.Connection
             {
                 // Retrieves input and, if it is a command, attempts to format it to be parsed.
                 input = Console.ReadLine().ToLower().Trim();
-                if (!input.StartsWith(prefix) && !(input.Length > 1)) continue;
+                if (!input.StartsWith(prefix) || !(input.Length > 1)) continue;
                 else input = input.Substring(1);
 
                 // Gets parameters and methods, and attempts to invoke a method if it matches the inputted command.
@@ -38,6 +40,7 @@ namespace DiscordBot.Connection
                             try
                             {
                                 method.Invoke(obj, parameters);
+                                continue;
                             }
                             catch (TargetParameterCountException)
                             {
@@ -87,29 +90,79 @@ namespace DiscordBot.Connection
             var methods = typeof(ConsoleTools).GetRuntimeMethods();
             foreach (MethodInfo method in methods)
             {
+                string methodParams = "";
                 foreach (Attribute attr in method.GetCustomAttributes())
                 {
                     if (attr is CommandAttribute cmd)
                     {
-                        Console.WriteLine($"{prefix}{cmd.Name} - {cmd.Info}");
+                        foreach (ParameterInfo param in method.GetParameters())
+                        {
+                            methodParams += param.Name + ",";
+                        }
+                        methodParams = methodParams.TrimEnd(',');
+                        Console.WriteLine($"{prefix}{cmd.Name} [{methodParams}] - {cmd.Info}");
                     }
                 }
             }
         }
 
         [Command("block", "Toggles the bot on/off so it can only listen to console commands.")]
-        private void BlockCommand()
+        private void BlockMethod()
         {
 
         }
 
-        [Command("log", "Creates or updates the list of logs for each server the bot is in.")]
-        private void LogMethod()
+        // Create directory if it does not exist
+        // Extract and store previous logs in dictionary if they exist
+        // Cycle through servers
+        // Add servers that are absent
+        // Update servers that are not up-to-date
+        [Command("log", "Makes current the list of logs and enables updates for each message received.")]
+        private async void LogMethod()
         {
+            var context = Global.Client;
+            // Go through each server to see if the log needs to be created or just updated.
+            foreach (SocketGuild guild in context.Guilds)
+            {
+                // Update log
+                if (LogMessages.DoesServerIdExist(guild.Id))
+                {
 
+                }
+                // Create log
+                else
+                {
+                    LogMessages.AddServerLog(guild.Id, await GetAllServerMessages(guild));
+                }
+            }
+
+            // Log is ready to be updated with incoming messages since it is now up-to-date.
+            Global.IsLoggingActive = true;
         }
 
-        [Command("blacklist", "PARAM: Channel ID. Toggles the channels in the log's blacklist.")]
+        private async Task<List<ulong>> GetAllServerMessages(SocketGuild guild)
+        {
+            const int messagesToRetrieve = 500000;
+            List<ulong> messageIds = new List<ulong>();
+
+            foreach (SocketTextChannel channel in guild.TextChannels)
+            {
+                var messageList = (await channel.GetMessagesAsync(messagesToRetrieve).FlattenAsync()).ToList();
+                foreach (SocketMessage message in messageList)
+                {
+                    messageIds.Add(message.Id);
+                }
+            }
+            return messageIds;
+        }
+
+        private async Task<List<ulong>> GetRemainingServerMessages(SocketGuild guild, SocketMessage recentMessage)
+        {
+            // Must account for deleted messages, new channels, empty channels.
+            return null;
+        }
+
+        [Command("blacklist", "Toggles the channels in the log's blacklist.")]
         private void LogBlacklistMethod(ulong id)
         {
             // Tries to store the given ID as a channel, provides feedback if it is not.

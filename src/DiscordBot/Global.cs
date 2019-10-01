@@ -7,6 +7,7 @@ namespace DiscordBot
 {
     public static class Global
     {
+        public static bool IsLoggingActive = false;
         internal static DiscordSocketClient Client { get; set; }
         internal static ulong MessageIdToTrack { get; set; } // Single message, could use list for multiple
 
