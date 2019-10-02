@@ -57,5 +57,21 @@ namespace DiscordBot.Utilities
             if (Global.GetSocketGuildWithId(server) == null) return;
             _serverLogMessages.Add(server, messages);
         }
+
+        // Returns the log for the server
+        public static List<ulong> GetServerLog(ulong server)
+        {
+            foreach (ulong id in _serverLogMessages.Keys)
+            {
+                if (server == id)
+                {
+                    if (_serverLogMessages.TryGetValue(id, out List<ulong> log))
+                    {
+                        return log;
+                    }
+                }
+            }
+            return null;
+        }
     }
 }

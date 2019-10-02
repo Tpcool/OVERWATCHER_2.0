@@ -156,9 +156,16 @@ namespace DiscordBot.Connection
             return messageIds;
         }
 
-        private async Task<List<ulong>> GetRemainingServerMessages(SocketGuild guild, SocketMessage recentMessage)
+        private async Task<List<ulong>> GetRemainingServerMessages(SocketGuild guild)
         {
             // Must account for deleted messages, new channels, empty channels.
+            const int messagesToRetrieve = 100;
+            List<ulong> messageIds = new List<ulong>();
+            foreach (SocketTextChannel channel in guild.TextChannels)
+            {
+                LogMessages.GetServerLog(channel.Id);
+            }
+
             return null;
         }
 
