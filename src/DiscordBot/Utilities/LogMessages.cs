@@ -7,33 +7,47 @@ namespace DiscordBot.Utilities
 {
     public static class LogMessages
     {
-        private static Dictionary<ulong, List<ulong>> _serverLogMessages;
+        // Actually, maybe just redesign to have the dict only take channel IDs since guilds can be inferred from them??
+        public struct ServerChannel
+        {
+            public ulong ServerId;
+            public ulong ChannelId;
+        }
+        private static Dictionary<ServerChannel, List<ulong>> _serverLogMessages;
 
         // Opens and stores the chat log IDs.
         static LogMessages()
         {
             string path = Constants.LogDirectory;
 
-            if (!Directory.Exists(Constants.LogDirectory)) Directory.CreateDirectory(path);
+            // Create blank directory to eventually populate with log files.
+            if (!Directory.Exists(Constants.LogDirectory))
+            {
+                Directory.CreateDirectory(path);
+            }
             else
             {
+                // Cycle through every file in the chat log directory.
                 foreach (string file in Directory.GetFiles(path))
                 {
                     // Isolate server ID by deconstructing its filename.
                     string[] serverStringSplit = file.Split('\\');
                     string serverString = serverStringSplit[serverStringSplit.Length - 1];
                     serverString = serverString.Substring(0, serverString.IndexOf('.'));
-                    // Converts and stores all message IDs in a list, then adds server and its messages to the dictionary.
+                    string[] stringServerChannel = serverString.Split('-');
+                    ServerChannel logServerChannel;
+                    // Converts and stores all message IDs in a list, then adds server/channel and its messages to the dictionary.
                     var serverMessages = new List<ulong>();
-                    if (ulong.TryParse(serverString, out ulong serverId))
+                    if (ulong.TryParse(stringServerChannel[0], out logServerChannel.ServerId) && 
+                        ulong.TryParse(stringServerChannel[stringServerChannel.Length - 1], out logServerChannel.ChannelId))
                     {
                         foreach (string line in File.ReadAllLines(file))
                         {
                             ulong.TryParse(line, out ulong messageId);
                             serverMessages.Add(messageId);
                         }
+                        _serverLogMessages.Add(logServerChannel, serverMessages);
                     }
-                    _serverLogMessages.Add(serverId, serverMessages);
                 }
             }
         }

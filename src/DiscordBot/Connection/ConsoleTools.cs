@@ -158,12 +158,27 @@ namespace DiscordBot.Connection
 
         private async Task<List<ulong>> GetRemainingServerMessages(SocketGuild guild)
         {
+            // Consider putting each channel in its own log file???
             // Must account for deleted messages, new channels, empty channels.
-            const int messagesToRetrieve = 100;
-            List<ulong> messageIds = new List<ulong>();
+            const int messagesToRetrieve = 50;
+            List<ulong> serverMessages = LogMessages.GetServerLog(guild.Id);
             foreach (SocketTextChannel channel in guild.TextChannels)
             {
-                LogMessages.GetServerLog(channel.Id);
+                var messageList = (await channel.GetMessagesAsync(messagesToRetrieve).FlattenAsync()).ToList();
+                // if statement to check to see if the server message is in the current channel
+
+                for (int i = messageList.Count; i >= 0; i--)
+                {
+                    if (messageList.ElementAt(i).Id == message.Id)
+                    {
+                        for (int j = i + 1; j < messageList.Count(); j++)
+                        {
+                            serverMessages.Add(messageList.ElementAt(j).Id);
+                        }
+                        break;
+                    }
+                }
+
             }
 
             return null;

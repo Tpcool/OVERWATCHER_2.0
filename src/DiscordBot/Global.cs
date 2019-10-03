@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,5 +15,10 @@ namespace DiscordBot
         public static SocketUser GetSocketUserWithId(ulong id) => Client.GetUser(id);
         public static SocketGuild GetSocketGuildWithId(ulong id) => Client.GetGuild(id);
         public static SocketChannel GetSocketChannelWithId(ulong id) => Client.GetChannel(id);
+        public static SocketGuild GetSocketGuildWithChannelId(ulong id)
+        {
+            SocketTextChannel a = (SocketTextChannel)Client.GetChannel(id);
+            return a.Guild;
+        }
     }
 }
