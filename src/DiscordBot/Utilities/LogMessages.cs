@@ -1,19 +1,14 @@
-﻿using System;
+﻿using Discord.WebSocket;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace DiscordBot.Utilities
 {
     public static class LogMessages
     {
-        // Actually, maybe just redesign to have the dict only take channel IDs since guilds can be inferred from them??
-        public struct ServerChannel
-        {
-            public ulong ServerId;
-            public ulong ChannelId;
-        }
-        private static Dictionary<ServerChannel, List<ulong>> _serverLogMessages;
+        // Channel ID key, list of message IDs values.
+        private static Dictionary<ulong, List<ulong>> _serverLogMessages;
 
         // Opens and stores the chat log IDs.
         static LogMessages()
@@ -30,34 +25,35 @@ namespace DiscordBot.Utilities
                 // Cycle through every file in the chat log directory.
                 foreach (string file in Directory.GetFiles(path))
                 {
-                    // Isolate server ID by deconstructing its filename.
+                    // Split the filename into its individual components.
                     string[] serverStringSplit = file.Split('\\');
+                    // Get the filename without the path.
                     string serverString = serverStringSplit[serverStringSplit.Length - 1];
+                    // Get the filename without the file type, leaving just the channel ID.
                     serverString = serverString.Substring(0, serverString.IndexOf('.'));
-                    string[] stringServerChannel = serverString.Split('-');
-                    ServerChannel logServerChannel;
                     // Converts and stores all message IDs in a list, then adds server/channel and its messages to the dictionary.
                     var serverMessages = new List<ulong>();
-                    if (ulong.TryParse(stringServerChannel[0], out logServerChannel.ServerId) && 
-                        ulong.TryParse(stringServerChannel[stringServerChannel.Length - 1], out logServerChannel.ChannelId))
+                    if (ulong.TryParse(serverString, out ulong channelId))
                     {
                         foreach (string line in File.ReadAllLines(file))
                         {
                             ulong.TryParse(line, out ulong messageId);
                             serverMessages.Add(messageId);
                         }
-                        _serverLogMessages.Add(logServerChannel, serverMessages);
+                        _serverLogMessages.Add(channelId, serverMessages);
                     }
                 }
             }
         }
 
+        // Returns the chatlog for each channel in a dictionary.
         public static Dictionary<ulong, List<ulong>> ServerLogMessages()
         {
             return _serverLogMessages;
         }
 
-        public static bool DoesServerIdExist(ulong id)
+        // Checks to see if the channel ID specified exists in the current chatlog.
+        public static bool DoesChannelIdExistInLog(ulong id)
         {
             foreach (ulong savedId in _serverLogMessages.Keys)
             {
@@ -66,18 +62,19 @@ namespace DiscordBot.Utilities
             return false;
         }
 
-        public static void AddServerLog(ulong server, List<ulong> messages)
+        // Adds a channel ID and list of message IDs to the dictionary for the current chatlog.
+        public static void AddChannelLog(ulong channel, List<ulong> messages)
         {
-            if (Global.GetSocketGuildWithId(server) == null) return;
-            _serverLogMessages.Add(server, messages);
+            if (Global.GetSocketGuildWithId(channel) == null) return;
+            _serverLogMessages.Add(channel, messages);
         }
 
         // Returns the log for the server
-        public static List<ulong> GetServerLog(ulong server)
+        public static List<ulong> GetChannelLog(ulong channel)
         {
             foreach (ulong id in _serverLogMessages.Keys)
             {
-                if (server == id)
+                if (channel == id)
                 {
                     if (_serverLogMessages.TryGetValue(id, out List<ulong> log))
                     {
@@ -86,6 +83,32 @@ namespace DiscordBot.Utilities
                 }
             }
             return null;
+        }
+
+        // Returns a list of all message IDs saved in a single list that share the same server ID.
+        public static uint GetServerMessageCount(ulong server)
+        {
+            // Return if the server is invalid.
+            if (Global.GetSocketGuildWithId(server) == null)
+            {
+                Console.WriteLine("Server does not exist in the current context.");
+                return 0;
+            }
+            uint serverMessageCount = 0;
+            // Iterate through each channel in the log.
+            foreach (ulong channel in _serverLogMessages.Keys)
+            {
+                // If the channel's server is equal to the specified server, add the list's count to the total.
+                SocketGuild guild = Global.GetSocketGuildWithChannelId(channel);
+                if (guild.Id == server)
+                {
+                    if (_serverLogMessages.TryGetValue(channel, out List<ulong> logs))
+                    {
+                        serverMessageCount += (uint)logs.Count;
+                    }
+                }
+            }
+            return serverMessageCount;
         }
     }
 }

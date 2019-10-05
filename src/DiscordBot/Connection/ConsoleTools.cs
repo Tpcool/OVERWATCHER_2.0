@@ -125,14 +125,14 @@ namespace DiscordBot.Connection
             foreach (SocketGuild guild in context.Guilds)
             {
                 // Update log
-                if (LogMessages.DoesServerIdExist(guild.Id))
+                if (LogMessages.DoesChannelIdExistInLog(guild.Id))
                 {
 
                 }
                 // Create log
                 else
                 {
-                    LogMessages.AddServerLog(guild.Id, await GetAllServerMessages(guild));
+                    LogMessages.AddChannelLog(guild.Id, await GetAllServerMessages(guild));
                 }
             }
 
@@ -161,7 +161,7 @@ namespace DiscordBot.Connection
             // Consider putting each channel in its own log file???
             // Must account for deleted messages, new channels, empty channels.
             const int messagesToRetrieve = 50;
-            List<ulong> serverMessages = LogMessages.GetServerLog(guild.Id);
+            List<ulong> serverMessages = LogMessages.GetChannelLog(guild.Id);
             foreach (SocketTextChannel channel in guild.TextChannels)
             {
                 var messageList = (await channel.GetMessagesAsync(messagesToRetrieve).FlattenAsync()).ToList();
