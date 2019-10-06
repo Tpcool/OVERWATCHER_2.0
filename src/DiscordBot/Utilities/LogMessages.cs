@@ -63,9 +63,17 @@ namespace DiscordBot.Utilities
         }
 
         // Adds a channel ID and list of message IDs to the dictionary for the current chatlog.
-        public static void AddChannelLog(ulong channel, List<ulong> messages)
+        public static void AddOrUpdateChannelLog(ulong channel, List<ulong> messages)
         {
             if (Global.GetSocketGuildWithId(channel) == null) return;
+            // Checks to see if the log already exists for the channel, and if it does, overwrites the list.
+            foreach (ulong logChannel in _serverLogMessages.Keys)
+            {
+                if (channel == logChannel)
+                {
+                    _serverLogMessages[channel] = messages;
+                }
+            }
             _serverLogMessages.Add(channel, messages);
         }
 
