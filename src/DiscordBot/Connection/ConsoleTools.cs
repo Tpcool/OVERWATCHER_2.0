@@ -114,11 +114,6 @@ namespace DiscordBot.Connection
 
         }
 
-        // Create directory if it does not exist
-        // Extract and store previous logs in dictionary if they exist
-        // Cycle through servers
-        // Add servers that are absent
-        // Update servers that are not up-to-date
         [Command("log", "Makes current the list of logs and enables updates for each message received.")]
         private async void LogMethod()
         {
@@ -128,8 +123,13 @@ namespace DiscordBot.Connection
             {
                 foreach (SocketTextChannel channel in guild.Channels)
                 {
+                    // Ignore blacklisted channels
+                    if (LogMessages.IsChannelBlacklisted(channel.Id))
+                    {
+                        continue;
+                    }
                     // Update log
-                    if (LogMessages.DoesChannelIdExistInLog(channel.Id))
+                    else if (LogMessages.DoesChannelIdExistInLog(channel.Id))
                     {
                         UpdateChannelMessageLog(channel);
                     }
@@ -184,34 +184,47 @@ namespace DiscordBot.Connection
             return messageIds;
         }
 
+        // Returns a list of all of the new message IDs in a channel.
         private async Task<List<ulong>> GetUpdatedChannelMessages(SocketTextChannel channel, List<ulong> oldMessages)
         {
             DateTimeOffset mostRecentTimestamp = DateTimeOffset.MaxValue;
 
+            // Goes through all currently stored messages to find the most recent valid entry to save when it was posted.
             for (int i = oldMessages.Count - 1; i >= 0; i--)
             {
                 SocketMessage msg = (SocketMessage)await channel.GetMessageAsync(oldMessages[i]);
                 if (!(msg == null)) mostRecentTimestamp = msg.CreatedAt;
             }
 
+            // If no valid entries were found, provide feedback and return nothing.
             if (mostRecentTimestamp == DateTimeOffset.MaxValue)
             {
                 Console.WriteLine($"Cannot locate most recent message in {channel.Name}'s log.");
                 return null;
             }
 
+            // Cycles through all new messages until the most recently saved message is found and saves all new entries to a list.
             var newMessages = (await channel.GetMessagesAsync(UpdateMessagesToRetrieve).FlattenAsync()).ToList();
+            List<IMessage> updatedMessages = null;
             while (newMessages.Count > 1 && newMessages != null)
             {
                 for (int i = 0; i < newMessages.Count; i++)
                 {
                     if (mostRecentTimestamp == newMessages[i].CreatedAt)
                     {
-
+                        updatedMessages = (await channel.GetMessagesAsync(newMessages[i], Direction.After, NewMessagesToRetrieve).FlattenAsync()).ToList();
                     }
                 }
                 newMessages = (await channel.GetMessagesAsync(newMessages[newMessages.Count - 1], Direction.Before, UpdateMessagesToRetrieve).FlattenAsync()).ToList();
             }
+
+            // Create a list with only the message IDs of the new messages and return it.
+            List<ulong> newMessageIds = new List<ulong>(updatedMessages.Count);
+            foreach (var msg in updatedMessages)
+            {
+                newMessageIds.Add(msg.Id);
+            }
+            return newMessageIds;
         }
 
         [Command("blacklist", "Toggles the channels in the log's blacklist.")]
@@ -234,6 +247,7 @@ namespace DiscordBot.Connection
                 var fileList = File.ReadAllText(blacklist);
                 if (fileList.Contains(idString))
                 {
+                    LogMessages.RemoveLogIfExists(id);
                     fileList.Remove(fileList.IndexOf(idString), idString.Length + 1);
                     Console.WriteLine($"Channel \"{channel.Name}\" removed from blacklist.");
                 }
@@ -250,7 +264,7 @@ namespace DiscordBot.Connection
         private void DisplayBlacklistMethod()
         {
             // Get the list and provide feedback if it is null.
-            List<ulong> list = GetBlacklist();
+            List<ulong> list = LogMessages.GetBlacklist();
             if (list == null)
             {
                 Console.WriteLine("Blacklist is empty or does not exist.");
@@ -266,22 +280,6 @@ namespace DiscordBot.Connection
             }
             if (msg.Equals(string.Empty)) msg = "The blacklist only has invalid entries.";
             Console.WriteLine(msg);
-        }
-
-        private List<ulong> GetBlacklist()
-        {
-            // Return a null list if it does not exist or is empty.
-            string blacklist = Constants.LogBlacklist;
-            if (!File.Exists(blacklist) || File.ReadAllText(blacklist).Equals(string.Empty)) return null;
-
-            // Get the list of channel IDs, convert them to ulongs, store in list.
-            List<string> stringList = File.ReadLines(blacklist).ToList();
-            List<ulong> channelList = new List<ulong>(stringList.Count);
-            foreach (string channel in stringList)
-            {
-                if (ulong.TryParse(channel, out ulong id)) channelList.Add(id);
-            }
-            return channelList;
         }
     }
 

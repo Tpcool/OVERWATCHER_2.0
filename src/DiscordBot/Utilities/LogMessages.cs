@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace DiscordBot.Utilities
 {
@@ -117,6 +118,41 @@ namespace DiscordBot.Utilities
                 }
             }
             return serverMessageCount;
+        }
+
+        // Returns a list of channel IDs of all of the blacklisted channels that have been added.
+        public static List<ulong> GetBlacklist()
+        {
+            // Return a null list if it does not exist or is empty.
+            string blacklist = Constants.LogBlacklist;
+            if (!File.Exists(blacklist) || File.ReadAllText(blacklist).Equals(string.Empty)) return null;
+
+            // Get the list of channel IDs, convert them to ulongs, store in list.
+            List<string> stringList = File.ReadLines(blacklist).ToList();
+            List<ulong> channelList = new List<ulong>(stringList.Count);
+            foreach (string channel in stringList)
+            {
+                if (ulong.TryParse(channel, out ulong id)) channelList.Add(id);
+            }
+            return channelList;
+        }
+
+        // Checks to see if the received channel ID is in the list of blacklisted channels.
+        public static bool IsChannelBlacklisted(ulong channel)
+        {
+            List<ulong> blacklist = GetBlacklist();
+            // Go through every entry and compare it to the given channel ID.
+            foreach (ulong blacklistedChannel in blacklist)
+            {
+                if (channel == blacklistedChannel) return true;
+            }
+            return false;
+        }
+
+        // Checks to see if the log already exists
+        public static void RemoveLogIfExists(ulong channel)
+        {
+            // todo: optimize ischannelblacklisted by making list a member of the class, optimize blacklist command
         }
     }
 }
