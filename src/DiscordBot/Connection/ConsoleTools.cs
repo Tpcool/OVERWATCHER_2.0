@@ -231,12 +231,12 @@ namespace DiscordBot.Connection
         private void LogBlacklistMethod(ulong id)
         {
             // Tries to store the given ID as a channel, provides feedback if it is not.
-            IChannel channel = Global.GetSocketChannelWithId(id);
-            if (channel == null)
+            if (Global.IsValidChannelId(id))
             {
                 Console.WriteLine("Not a valid channel ID.");
                 return;
             }
+            IChannel channel = Global.GetSocketChannelWithId(id);
 
             // Writes the ID to a new file if it does not exist, otherwise toggles ID in current list and saves.
             string blacklist = Constants.LogBlacklist;
@@ -264,7 +264,7 @@ namespace DiscordBot.Connection
         private void DisplayBlacklistMethod()
         {
             // Get the list and provide feedback if it is null.
-            List<ulong> list = LogMessages.GetBlacklist();
+            List<ulong> list = LogMessages.Blacklist();
             if (list == null)
             {
                 Console.WriteLine("Blacklist is empty or does not exist.");

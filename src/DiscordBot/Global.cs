@@ -20,5 +20,11 @@ namespace DiscordBot
             SocketTextChannel a = (SocketTextChannel)Client.GetChannel(id);
             return a.Guild;
         }
+        public static bool IsValidChannelId(ulong id)
+        {
+            IChannel channel = GetSocketChannelWithId(id);
+            if (channel == null) return false;
+            return true;
+        }
     }
 }

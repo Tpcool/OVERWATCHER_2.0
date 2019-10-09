@@ -10,6 +10,7 @@ namespace DiscordBot.Utilities
     {
         // Channel ID key, list of message IDs values.
         private static Dictionary<ulong, List<ulong>> _serverLogMessages;
+        private static List<ulong> _blacklist;
 
         // Opens and stores the chat log IDs.
         static LogMessages()
@@ -45,12 +46,46 @@ namespace DiscordBot.Utilities
                     }
                 }
             }
+            // Once the logs in storage are saved, save the channel blacklist from storage.
+            StoreBlacklist();
+        }
+
+        // Retrieves the blacklist from storage and saves it as a list.
+        private static void StoreBlacklist()
+        {
+            // Return if blacklist does not exist or is empty.
+            string blacklist = Constants.LogBlacklist;
+            if (!File.Exists(blacklist) || File.ReadAllText(blacklist).Equals(string.Empty)) return;
+
+            // Get the list of channel IDs, convert them to ulongs, store in list.
+            List<string> stringList = File.ReadLines(blacklist).ToList();
+            _blacklist = new List<ulong>(stringList.Count);
+            foreach (string channel in stringList)
+            {
+                if (ulong.TryParse(channel, out ulong id)) _blacklist.Add(id);
+            }
         }
 
         // Returns the chatlog for each channel in a dictionary.
         public static Dictionary<ulong, List<ulong>> ServerLogMessages()
         {
             return _serverLogMessages;
+        }
+
+        public static List<ulong> Blacklist()
+        {
+            return _blacklist;
+        }
+
+        public static void AddToBlacklist(ulong id)
+        {
+
+        }
+
+        // Checks to see if the log already exists
+        public static void RemoveLogIfExists(ulong channel)
+        {
+            // todo: optimize ischannelblacklisted by making list a member of the class, optimize blacklist command
         }
 
         // Checks to see if the channel ID specified exists in the current chatlog.
@@ -78,7 +113,7 @@ namespace DiscordBot.Utilities
             _serverLogMessages.Add(channel, messages);
         }
 
-        // Returns the log for the server
+        // Returns the log (list of message IDs) for the given channel
         public static List<ulong> GetChannelLog(ulong channel)
         {
             foreach (ulong id in _serverLogMessages.Keys)
@@ -120,39 +155,16 @@ namespace DiscordBot.Utilities
             return serverMessageCount;
         }
 
-        // Returns a list of channel IDs of all of the blacklisted channels that have been added.
-        public static List<ulong> GetBlacklist()
-        {
-            // Return a null list if it does not exist or is empty.
-            string blacklist = Constants.LogBlacklist;
-            if (!File.Exists(blacklist) || File.ReadAllText(blacklist).Equals(string.Empty)) return null;
-
-            // Get the list of channel IDs, convert them to ulongs, store in list.
-            List<string> stringList = File.ReadLines(blacklist).ToList();
-            List<ulong> channelList = new List<ulong>(stringList.Count);
-            foreach (string channel in stringList)
-            {
-                if (ulong.TryParse(channel, out ulong id)) channelList.Add(id);
-            }
-            return channelList;
-        }
-
         // Checks to see if the received channel ID is in the list of blacklisted channels.
         public static bool IsChannelBlacklisted(ulong channel)
         {
-            List<ulong> blacklist = GetBlacklist();
+            List<ulong> blacklist = Blacklist();
             // Go through every entry and compare it to the given channel ID.
             foreach (ulong blacklistedChannel in blacklist)
             {
                 if (channel == blacklistedChannel) return true;
             }
             return false;
-        }
-
-        // Checks to see if the log already exists
-        public static void RemoveLogIfExists(ulong channel)
-        {
-            // todo: optimize ischannelblacklisted by making list a member of the class, optimize blacklist command
         }
     }
 }
