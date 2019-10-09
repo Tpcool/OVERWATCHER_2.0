@@ -236,28 +236,9 @@ namespace DiscordBot.Connection
                 Console.WriteLine("Not a valid channel ID.");
                 return;
             }
-            IChannel channel = Global.GetSocketChannelWithId(id);
 
             // Writes the ID to a new file if it does not exist, otherwise toggles ID in current list and saves.
-            string blacklist = Constants.LogBlacklist;
-            string idString = id.ToString();
-            if (!File.Exists(blacklist)) File.WriteAllText(blacklist, idString);
-            else
-            {
-                var fileList = File.ReadAllText(blacklist);
-                if (fileList.Contains(idString))
-                {
-                    LogMessages.RemoveLogIfExists(id);
-                    fileList.Remove(fileList.IndexOf(idString), idString.Length + 1);
-                    Console.WriteLine($"Channel \"{channel.Name}\" removed from blacklist.");
-                }
-                else
-                {
-                    fileList += idString + "\n";
-                    File.WriteAllText(blacklist, fileList);
-                    Console.WriteLine($"Channel \"{channel.Name}\" added to blacklist.");
-                }
-            }
+            LogMessages.ToggleBlacklistEntry(id);
         }
 
         [Command("displayblacklist", "Displays the list of channels currently being blacklisted.")]

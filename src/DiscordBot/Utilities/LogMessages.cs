@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -77,15 +78,64 @@ namespace DiscordBot.Utilities
             return _blacklist;
         }
 
-        public static void AddToBlacklist(ulong id)
+        public static void ToggleBlacklistEntry(ulong id)
         {
+            List<ulong> blacklist = Blacklist();
+            // If the blacklist does not exist, create a new blacklist file with the given ID as the first entry.
+            if (blacklist.Count == 0 && Global.IsValidChannelId(id))
+            {
+                blacklist.Add(id);
+                return;
+            }
+            IChannel channel = Global.GetSocketChannelWithId(id);
 
+            int i = 0;
+            bool wasInBlacklist = false;
+            // Go through all entries and remove the ones that match, if any.
+            foreach (ulong entry in blacklist)
+            {
+                // If the channel is already in the blacklist, delist it.
+                if (entry == id)
+                {
+                    blacklist.RemoveAt(i);
+                    wasInBlacklist = true;
+                }
+                i += 1;
+            }
+            // If the channel is not in the blacklist, remove any saved logs and add the ID to the blacklist.
+            if (!wasInBlacklist)
+            {
+                RemoveLogIfExists(id);
+                blacklist.Add(id);
+            }
+            // Saves the modified blacklist to storage.
+            _blacklist = blacklist;
+            SaveBlacklistToStorage();
         }
 
-        // Checks to see if the log already exists
+        // Cycles through all entries in the blacklist data structure and saves it to storage.
+        private static void SaveBlacklistToStorage()
+        {
+            string blacklistPath = Constants.LogBlacklist;
+            string blacklistString = string.Empty;
+            List<ulong> blacklist = Blacklist();
+
+            foreach (ulong entry in blacklist)
+            {
+                blacklistString += entry.ToString() + "\n";
+            }
+            File.WriteAllText(blacklistPath, blacklistString);
+        }
+
+        // Checks to see if the log exists in storage, and deletes it if it does.
         public static void RemoveLogIfExists(ulong channel)
         {
-            // todo: optimize ischannelblacklisted by making list a member of the class, optimize blacklist command
+            string directory = Constants.LogDirectory;
+            string logPath = $@"{directory}{channel.ToString()}.txt";
+            if (File.Exists(logPath))
+            {
+                File.Delete(logPath);
+            }
         }
 
         // Checks to see if the channel ID specified exists in the current chatlog.
