@@ -174,7 +174,7 @@ namespace DiscordBot.Connection
         // Returns a list of all message IDs in the specified channel.
         private async Task<List<ulong>> GetAllChannelMessages(SocketTextChannel channel)
         {
-            var messageList = (await channel.GetMessagesAsync(NewMessagesToRetrieve).FlattenAsync()).ToList();
+            var messageList = await LogMessages.GetListOfChannelMessages(channel, NewMessagesToRetrieve);
             List<ulong> messageIds = new List<ulong>(messageList.Count);
 
             foreach (SocketMessage msg in messageList)
@@ -204,18 +204,18 @@ namespace DiscordBot.Connection
             }
 
             // Cycles through all new messages until the most recently saved message is found and saves all new entries to a list.
-            var newMessages = (await channel.GetMessagesAsync(UpdateMessagesToRetrieve).FlattenAsync()).ToList();
+            List<IMessage> newMessages = await LogMessages.GetListOfChannelMessages(channel, UpdateMessagesToRetrieve);
             List<IMessage> updatedMessages = null;
-            while (newMessages.Count > 1 && newMessages != null)
+            while (newMessages.Count > 1)
             {
                 for (int i = 0; i < newMessages.Count; i++)
                 {
                     if (mostRecentTimestamp == newMessages[i].CreatedAt)
                     {
-                        updatedMessages = (await channel.GetMessagesAsync(newMessages[i], Direction.After, NewMessagesToRetrieve).FlattenAsync()).ToList();
+                        updatedMessages = await LogMessages.GetListOfChannelMessages(channel, NewMessagesToRetrieve, newMessages[i], Direction.After);
                     }
                 }
-                newMessages = (await channel.GetMessagesAsync(newMessages[newMessages.Count - 1], Direction.Before, UpdateMessagesToRetrieve).FlattenAsync()).ToList();
+                newMessages = await LogMessages.GetListOfChannelMessages(channel, NewMessagesToRetrieve, newMessages[newMessages.Count - 1], Direction.Before);
             }
 
             // Create a list with only the message IDs of the new messages and return it.
@@ -261,6 +261,12 @@ namespace DiscordBot.Connection
             }
             if (msg.Equals(string.Empty)) msg = "The blacklist only has invalid entries.";
             Console.WriteLine(msg);
+        }
+
+        [Command("test", "For testing commands")]
+        private async Task TestMethodAsync(ulong id)
+        {
+            // For implementing test functionality.
         }
     }
 

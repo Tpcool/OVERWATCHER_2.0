@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DiscordBot.Utilities
 {
@@ -78,6 +79,7 @@ namespace DiscordBot.Utilities
             return _blacklist;
         }
 
+        // If given a valid channel ID, the ID will either be added or removed from the channel blacklist.
         public static void ToggleBlacklistEntry(ulong id)
         {
             List<ulong> blacklist = Blacklist();
@@ -215,6 +217,18 @@ namespace DiscordBot.Utilities
                 if (channel == blacklistedChannel) return true;
             }
             return false;
+        }
+
+        public static async Task<List<IMessage>> GetListOfChannelMessages(SocketTextChannel channel, int numMessages)
+        {
+            List<IMessage> messageList = (await channel.GetMessagesAsync(numMessages).FlattenAsync()).ToList();
+            return messageList;
+        }
+
+        public static async Task<List<IMessage>> GetListOfChannelMessages(SocketTextChannel channel, int numMessages, IMessage startingMessage, Direction direction)
+        {
+            List<IMessage> messageList = (await channel.GetMessagesAsync(startingMessage, direction, numMessages).FlattenAsync()).ToList();
+            return messageList;
         }
     }
 }
