@@ -115,7 +115,7 @@ namespace DiscordBot.Connection
         }
 
         [Command("log", "Makes current the list of logs and enables updates for each message received.")]
-        private async void LogMethod()
+        private void LogMethod()
         {
             var context = Global.Client;
             // Go through each server and channel to see if the log needs to be created or just updated.
@@ -264,7 +264,7 @@ namespace DiscordBot.Connection
         }
 
         [Command("test", "For testing commands")]
-        private async Task TestMethodAsync(ulong id)
+        private void TestMethodAsync(ulong id)
         {
             // For implementing test functionality.
         }

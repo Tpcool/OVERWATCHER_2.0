@@ -129,6 +129,51 @@ namespace DiscordBot.Utilities
             File.WriteAllText(blacklistPath, blacklistString);
         }
 
+        // Saves all chatlogs stored in the dictionary to storage.
+        public static void SaveLogToStorage()
+        {
+
+        }
+
+        // Saves the given channel's chatlog in the dictionary to storage.
+        public static void SaveLogToStorage(ulong channel)
+        {
+            string directory = Constants.LogDirectory;
+            string logPath = $@"{directory}{channel.ToString()}.txt";
+            if (File.Exists(logPath))
+            {
+                if (_serverLogMessages.TryGetValue(channel, out List<ulong> channelLog))
+                {
+                    string[] textLog = File.ReadAllLines(logPath);
+                    if (ulong.TryParse(textLog[textLog.Length - 1], out ulong mostRecentSavedMessage))
+                    {
+                        int i = channelLog.IndexOf(mostRecentSavedMessage);
+                    }
+                }
+            }
+            else
+            {
+
+            }
+        }
+
+        public static void SaveLogToStorage(ulong channel, ulong message)
+        {
+            string directory = Constants.LogDirectory;
+            string logPath = $@"{directory}{channel.ToString()}.txt";
+            if (File.Exists(logPath))
+            {
+                if (_serverLogMessages.TryGetValue(channel, out List<ulong> channelLog))
+                {
+                    int i = channelLog.IndexOf();
+                }
+            }
+            else
+            {
+
+            }
+        }
+
         // Checks to see if the log exists in storage, and deletes it if it does.
         public static void RemoveLogIfExists(ulong channel)
         {
@@ -163,6 +208,7 @@ namespace DiscordBot.Utilities
                 }
             }
             _serverLogMessages.Add(channel, messages);
+            // TODO: save log to storage?
         }
 
         // Returns the log (list of message IDs) for the given channel

@@ -44,6 +44,11 @@ namespace DiscordBot.Connection
                 var user = UserAccounts.GetAccount(msg.Author);
                 user.AddCurrency(1);
             }
+            if (Global.IsLoggingActive && !LogMessages.IsChannelBlacklisted(msg.Channel.Id))
+            {
+                // TODO: add message to internal log and storage log
+                LogMessages.AddOrUpdateChannelLog();
+            }
             return Task.CompletedTask;
         }
 
