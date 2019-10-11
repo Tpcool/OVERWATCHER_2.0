@@ -129,49 +129,38 @@ namespace DiscordBot.Utilities
             File.WriteAllText(blacklistPath, blacklistString);
         }
 
-        // Saves all chatlogs stored in the dictionary to storage.
-        public static void SaveLogToStorage()
-        {
-
-        }
-
-        // Saves the given channel's chatlog in the dictionary to storage.
-        public static void SaveLogToStorage(ulong channel)
+        // Saves the given channel's chatlog in the dictionary to storage using only the new messages in that channel.
+        public static void AppendLogToStorage(ulong channel, List<ulong> newMessages)
         {
             string directory = Constants.LogDirectory;
             string logPath = $@"{directory}{channel.ToString()}.txt";
             if (File.Exists(logPath))
             {
-                if (_serverLogMessages.TryGetValue(channel, out List<ulong> channelLog))
+                using (FileStream logFile = new FileStream(logPath, FileMode.Append, FileAccess.Write))
                 {
-                    string[] textLog = File.ReadAllLines(logPath);
-                    if (ulong.TryParse(textLog[textLog.Length - 1], out ulong mostRecentSavedMessage))
+                    using (StreamWriter sw = new StreamWriter(logFile))
                     {
-                        int i = channelLog.IndexOf(mostRecentSavedMessage);
+                        foreach (ulong msg in newMessages)
+                        {
+                            sw.WriteLine(msg.ToString());
+                        }
                     }
                 }
             }
             else
             {
-
+                string messages = string.Empty;
+                foreach (ulong msg in newMessages)
+                {
+                    messages += msg.ToString() + "\n";
+                }
+                File.WriteAllText(logPath, messages);
             }
         }
 
-        public static void SaveLogToStorage(ulong channel, ulong message)
+        public static void AppendLogToStorage(ulong channel, ulong message)
         {
-            string directory = Constants.LogDirectory;
-            string logPath = $@"{directory}{channel.ToString()}.txt";
-            if (File.Exists(logPath))
-            {
-                if (_serverLogMessages.TryGetValue(channel, out List<ulong> channelLog))
-                {
-                    int i = channelLog.IndexOf();
-                }
-            }
-            else
-            {
-
-            }
+            AppendLogToStorage(channel, new List<ulong> { message });
         }
 
         // Checks to see if the log exists in storage, and deletes it if it does.
@@ -198,31 +187,38 @@ namespace DiscordBot.Utilities
         // Adds a channel ID and list of message IDs to the dictionary for the current chatlog.
         public static void AddOrUpdateChannelLog(ulong channel, List<ulong> messages)
         {
-            if (Global.GetSocketGuildWithId(channel) == null) return;
+            if (!Global.IsValidChannelId(channel)) return;
             // Checks to see if the log already exists for the channel, and if it does, overwrites the list.
-            foreach (ulong logChannel in _serverLogMessages.Keys)
+            if (_serverLogMessages.ContainsKey(channel))
             {
-                if (channel == logChannel)
-                {
-                    _serverLogMessages[channel] = messages;
-                }
+                _serverLogMessages[channel] = messages;
             }
-            _serverLogMessages.Add(channel, messages);
-            // TODO: save log to storage?
+            else
+            {
+                _serverLogMessages.Add(channel, messages);
+            }
+        }
+
+        // Adds a single message to the channel log.
+        public static void AddOrAppendChannelLog(ulong channel, ulong message)
+        {
+            if (!Global.IsValidChannelId(channel)) return;
+            if (_serverLogMessages.ContainsKey(channel))
+            {
+                _serverLogMessages[channel].Add(message);
+            }
+            else
+            {
+                _serverLogMessages.Add(channel, new List<ulong> { message });
+            }
         }
 
         // Returns the log (list of message IDs) for the given channel
         public static List<ulong> GetChannelLog(ulong channel)
         {
-            foreach (ulong id in _serverLogMessages.Keys)
+            if (_serverLogMessages.TryGetValue(channel, out List<ulong> log))
             {
-                if (channel == id)
-                {
-                    if (_serverLogMessages.TryGetValue(id, out List<ulong> log))
-                    {
-                        return log;
-                    }
-                }
+                return log;
             }
             return null;
         }

@@ -46,8 +46,8 @@ namespace DiscordBot.Connection
             }
             if (Global.IsLoggingActive && !LogMessages.IsChannelBlacklisted(msg.Channel.Id))
             {
-                // TODO: add message to internal log and storage log
-                LogMessages.AddOrUpdateChannelLog();
+                LogMessages.AddOrAppendChannelLog(msg.Channel.Id, msg.Id);
+                LogMessages.AppendLogToStorage(msg.Channel.Id, msg.Id);
             }
             return Task.CompletedTask;
         }

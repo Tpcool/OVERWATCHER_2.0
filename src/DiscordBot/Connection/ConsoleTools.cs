@@ -145,23 +145,14 @@ namespace DiscordBot.Connection
             Global.IsLoggingActive = true;
         }
 
-        // Updates the chatlog for all channels in a server if they exist, and adds a channel if it does not exist.
+        // Updates the chatlog for all channels in a server if they exist.
         private async void UpdateChannelMessageLog(SocketTextChannel channel)
         {
-            // Must account for deleted messages, new channels, empty channels.
-
             List<ulong> channelMessages = LogMessages.GetChannelLog(channel.Id);
-            // Get all of the channel's messages if the channel is new or empty.
-            if (channelMessages == null)
-            {
-                channelMessages.AddRange(await GetAllChannelMessages(channel));
-            }
-            // Update the channel's messages if the channel already has messages in it.
-            else
-            {
-                channelMessages.AddRange(await GetUpdatedChannelMessages(channel, channelMessages));
-            }
+            List<ulong> newMessages = await GetUpdatedChannelMessages(channel, channelMessages);
+            channelMessages.AddRange(newMessages);
             LogMessages.AddOrUpdateChannelLog(channel.Id, channelMessages);
+            LogMessages.AppendLogToStorage(channel.Id, newMessages);
         }
 
         // Sets the chatlog for all channels in a server.
@@ -169,6 +160,7 @@ namespace DiscordBot.Connection
         {
             List<ulong> messageIds = await GetAllChannelMessages(channel);
             LogMessages.AddOrUpdateChannelLog(channel.Id, messageIds);
+            LogMessages.AppendLogToStorage(channel.Id, messageIds);
         }
 
         // Returns a list of all message IDs in the specified channel.
