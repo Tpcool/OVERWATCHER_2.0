@@ -140,7 +140,6 @@ namespace DiscordBot.Connection
                     }
                 }
             }
-
             // Log is ready to be updated with incoming messages since it is now up-to-date.
             Global.IsLoggingActive = true;
         }

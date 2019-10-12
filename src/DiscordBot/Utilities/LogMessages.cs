@@ -26,6 +26,7 @@ namespace DiscordBot.Utilities
             }
             else
             {
+                if (Directory.GetFiles(path) == null) return;
                 // Cycle through every file in the chat log directory.
                 foreach (string file in Directory.GetFiles(path))
                 {
@@ -177,6 +178,7 @@ namespace DiscordBot.Utilities
         // Checks to see if the channel ID specified exists in the current chatlog.
         public static bool DoesChannelIdExistInLog(ulong id)
         {
+            if (_serverLogMessages == null) return false;
             foreach (ulong savedId in _serverLogMessages.Keys)
             {
                 if (id == savedId) return true;
@@ -253,6 +255,7 @@ namespace DiscordBot.Utilities
         public static bool IsChannelBlacklisted(ulong channel)
         {
             List<ulong> blacklist = Blacklist();
+            if (blacklist == null) return false;
             // Go through every entry and compare it to the given channel ID.
             foreach (ulong blacklistedChannel in blacklist)
             {
