@@ -121,7 +121,7 @@ namespace DiscordBot.Connection
             // Go through each server and channel to see if the log needs to be created or just updated.
             foreach (SocketGuild guild in context.Guilds)
             {
-                foreach (SocketTextChannel channel in guild.Channels)
+                foreach (SocketTextChannel channel in guild.TextChannels)
                 {
                     // Ignore blacklisted channels
                     if (LogMessages.IsChannelBlacklisted(channel.Id))
@@ -146,7 +146,7 @@ namespace DiscordBot.Connection
 
         // Updates the chatlog for all channels in a server if they exist.
         private async void UpdateChannelMessageLog(SocketTextChannel channel)
-        {
+        { //TODO: Fix some sort of infinite loop issue when updating logs?
             List<ulong> channelMessages = LogMessages.GetChannelLog(channel.Id);
             List<ulong> newMessages = await GetUpdatedChannelMessages(channel, channelMessages);
             channelMessages.AddRange(newMessages);
@@ -168,7 +168,7 @@ namespace DiscordBot.Connection
             var messageList = await LogMessages.GetListOfChannelMessages(channel, NewMessagesToRetrieve);
             List<ulong> messageIds = new List<ulong>(messageList.Count);
 
-            foreach (SocketMessage msg in messageList)
+            foreach (var msg in messageList)
             {
                 messageIds.Add(msg.Id);
             }
@@ -183,7 +183,7 @@ namespace DiscordBot.Connection
             // Goes through all currently stored messages to find the most recent valid entry to save when it was posted.
             for (int i = oldMessages.Count - 1; i >= 0; i--)
             {
-                SocketMessage msg = (SocketMessage)await channel.GetMessageAsync(oldMessages[i]);
+                IMessage msg = await channel.GetMessageAsync(oldMessages[i]);
                 if (!(msg == null)) mostRecentTimestamp = msg.CreatedAt;
             }
 

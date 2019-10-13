@@ -11,7 +11,7 @@ namespace DiscordBot.Utilities
     public static class LogMessages
     {
         // Channel ID key, list of message IDs values.
-        private static Dictionary<ulong, List<ulong>> _serverLogMessages;
+        private static Dictionary<ulong, List<ulong>> _serverLogMessages = new Dictionary<ulong, List<ulong>>();
         private static List<ulong> _blacklist;
 
         // Opens and stores the chat log IDs.
@@ -200,7 +200,7 @@ namespace DiscordBot.Utilities
         {
             if (!Global.IsValidChannelId(channel)) return;
             // Checks to see if the log already exists for the channel, and if it does, overwrites the list.
-            if (_serverLogMessages.ContainsKey(channel))
+            if (_serverLogMessages != null && _serverLogMessages.ContainsKey(channel))
             {
                 _serverLogMessages[channel] = messages;
             }
