@@ -1,6 +1,6 @@
 - Legacy commands:
 .blackjack - Send cards to DMs instead of directly in channel. One player against Overwatcher.
-.count
+.count - Generate graph of usage of word/phrase over time.
 .decide
 ✓ .doubleornothing
 .getallbux - Top 5 all time, top 5 in server.

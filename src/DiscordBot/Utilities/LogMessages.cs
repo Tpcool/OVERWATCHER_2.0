@@ -26,9 +26,12 @@ namespace DiscordBot.Utilities
             }
             else
             {
-                if (Directory.GetFiles(path) == null) return;
+                // Save the channel blacklist from storage.
+                StoreBlacklist();
                 // Cycle through every file in the chat log directory.
-                foreach (string file in Directory.GetFiles(path))
+                string[] allFiles = Directory.GetFiles(path);
+                if (allFiles == null) return;
+                foreach (string file in allFiles)
                 {
                     // Split the filename into its individual components.
                     string[] serverStringSplit = file.Split('\\');
@@ -40,17 +43,19 @@ namespace DiscordBot.Utilities
                     var serverMessages = new List<ulong>();
                     if (ulong.TryParse(serverString, out ulong channelId))
                     {
-                        foreach (string line in File.ReadAllLines(file))
+                        string[] lines = File.ReadAllLines(file);
+                        if (!(lines == null))
                         {
-                            ulong.TryParse(line, out ulong messageId);
-                            serverMessages.Add(messageId);
+                            foreach (string line in lines)
+                            {
+                                ulong.TryParse(line, out ulong messageId);
+                                serverMessages.Add(messageId);
+                            }
+                            _serverLogMessages.Add(channelId, serverMessages);
                         }
-                        _serverLogMessages.Add(channelId, serverMessages);
                     }
                 }
             }
-            // Once the logs in storage are saved, save the channel blacklist from storage.
-            StoreBlacklist();
         }
 
         // Retrieves the blacklist from storage and saves it as a list.
@@ -63,6 +68,7 @@ namespace DiscordBot.Utilities
             // Get the list of channel IDs, convert them to ulongs, store in list.
             List<string> stringList = File.ReadLines(blacklist).ToList();
             _blacklist = new List<ulong>(stringList.Count);
+            if (stringList == null) return;
             foreach (string channel in stringList)
             {
                 if (ulong.TryParse(channel, out ulong id)) _blacklist.Add(id);
@@ -94,6 +100,7 @@ namespace DiscordBot.Utilities
 
             int i = 0;
             bool wasInBlacklist = false;
+            if (blacklist == null) return;
             // Go through all entries and remove the ones that match, if any.
             foreach (ulong entry in blacklist)
             {
@@ -123,6 +130,7 @@ namespace DiscordBot.Utilities
             string blacklistString = string.Empty;
             List<ulong> blacklist = Blacklist();
 
+            if (blacklist == null) return;
             foreach (ulong entry in blacklist)
             {
                 blacklistString += entry.ToString() + "\n";
@@ -133,6 +141,7 @@ namespace DiscordBot.Utilities
         // Saves the given channel's chatlog in the dictionary to storage using only the new messages in that channel.
         public static void AppendLogToStorage(ulong channel, List<ulong> newMessages)
         {
+            if (newMessages == null) return;
             string directory = Constants.LogDirectory;
             string logPath = $@"{directory}{channel.ToString()}.txt";
             if (File.Exists(logPath))
@@ -228,6 +237,7 @@ namespace DiscordBot.Utilities
         // Returns a list of all message IDs saved in a single list that share the same server ID.
         public static uint GetServerMessageCount(ulong server)
         {
+            if (_serverLogMessages == null) return 0;
             // Return if the server is invalid.
             if (Global.GetSocketGuildWithId(server) == null)
             {
