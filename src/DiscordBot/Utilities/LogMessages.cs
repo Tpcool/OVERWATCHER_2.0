@@ -375,7 +375,7 @@ namespace DiscordBot.Utilities
         }
 
         // Returns a list of channel messages from oldest to newest.
-        public static async Task<List<IMessage>> GetListOfChannelMessages(SocketTextChannel channel, int numMessages)
+        private static async Task<List<IMessage>> GetListOfChannelMessages(SocketTextChannel channel, int numMessages)
         {
             List<IMessage> messageList = (await channel.GetMessagesAsync(numMessages).FlattenAsync()).ToList();
             messageList.Reverse();
@@ -383,7 +383,7 @@ namespace DiscordBot.Utilities
         }
 
         // Returns a list of channel messages from oldest to newest using a starting message and direction.
-        public static async Task<List<IMessage>> GetListOfChannelMessages(SocketTextChannel channel, int numMessages, IMessage startingMessage, Direction direction)
+        private static async Task<List<IMessage>> GetListOfChannelMessages(SocketTextChannel channel, int numMessages, IMessage startingMessage, Direction direction)
         {
             List<IMessage> messageList = (await channel.GetMessagesAsync(startingMessage, direction, numMessages).FlattenAsync()).ToList();
             messageList.Reverse();
