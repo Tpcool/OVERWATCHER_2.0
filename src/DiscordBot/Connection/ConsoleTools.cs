@@ -115,7 +115,7 @@ namespace DiscordBot.Connection
         }
 
         [Command("log", "Makes current the list of logs and enables updates for each message received.")]
-        private void LogMethod()
+        private async void LogMethod()
         {
             var context = Global.Client;
             // Go through each server and channel to see if the log needs to be created or just updated.
@@ -123,20 +123,30 @@ namespace DiscordBot.Connection
             {
                 foreach (SocketTextChannel channel in guild.TextChannels)
                 {
+                    string consoleMessage = $"The chatlog for channel #{channel.Name} of server \"{guild.Name}\" has been ";
                     // Ignore blacklisted channels
                     if (LogMessages.IsChannelBlacklisted(channel.Id))
                     {
+                        Console.WriteLine(consoleMessage + "ignored.");
+                        continue;
+                    }
+                    // Ignore channels with no changes
+                    else if (await LogMessages.IsLogUpToDate(channel))
+                    {
+                        Console.WriteLine(consoleMessage + "unchanged.");
                         continue;
                     }
                     // Update log
                     else if (LogMessages.DoesChannelIdExistInLog(channel.Id))
                     {
                         UpdateChannelMessageLog(channel);
+                        Console.WriteLine(consoleMessage + "updated.");
                     }
                     // Create log
                     else
                     {
                         CreateChannelMessageLog(channel);
+                        Console.WriteLine(consoleMessage + "created.");
                     }
                 }
             }
@@ -146,7 +156,7 @@ namespace DiscordBot.Connection
 
         // Updates the chatlog for all channels in a server if they exist.
         private async void UpdateChannelMessageLog(SocketTextChannel channel)
-        { //TODO: Fix some sort of infinite loop issue when updating logs?
+        {
             List<ulong> channelMessages = LogMessages.GetChannelLog(channel.Id);
             List<ulong> newMessages = await GetUpdatedChannelMessages(channel, channelMessages);
             channelMessages.AddRange(newMessages);
@@ -168,7 +178,7 @@ namespace DiscordBot.Connection
             var messageList = await LogMessages.GetListOfChannelMessages(channel, NewMessagesToRetrieve);
             List<ulong> messageIds = new List<ulong>(messageList.Count);
 
-            foreach (var msg in messageList)
+            foreach (IMessage msg in messageList)
             {
                 messageIds.Add(msg.Id);
             }
@@ -178,17 +188,22 @@ namespace DiscordBot.Connection
         // Returns a list of all of the new message IDs in a channel.
         private async Task<List<ulong>> GetUpdatedChannelMessages(SocketTextChannel channel, List<ulong> oldMessages)
         {
-            DateTimeOffset mostRecentTimestamp = DateTimeOffset.MaxValue;
+            if (oldMessages == null) return null;
+            long mostRecentTimestamp = DateTimeOffset.MaxValue.ToUnixTimeMilliseconds();
 
             // Goes through all currently stored messages to find the most recent valid entry to save when it was posted.
             for (int i = oldMessages.Count - 1; i >= 0; i--)
             {
                 IMessage msg = await channel.GetMessageAsync(oldMessages[i]);
-                if (!(msg == null)) mostRecentTimestamp = msg.CreatedAt;
+                if (!(msg == null))
+                {
+                    mostRecentTimestamp = msg.CreatedAt.ToUnixTimeMilliseconds();
+                    break;
+                }
             }
 
             // If no valid entries were found, provide feedback and return nothing.
-            if (mostRecentTimestamp == DateTimeOffset.MaxValue)
+            if (mostRecentTimestamp == DateTimeOffset.MaxValue.ToUnixTimeMilliseconds())
             {
                 Console.WriteLine($"Cannot locate most recent message in {channel.Name}'s log.");
                 return null;
@@ -196,17 +211,24 @@ namespace DiscordBot.Connection
 
             // Cycles through all new messages until the most recently saved message is found and saves all new entries to a list.
             List<IMessage> newMessages = await LogMessages.GetListOfChannelMessages(channel, UpdateMessagesToRetrieve);
-            List<IMessage> updatedMessages = null;
-            while (newMessages.Count > 1)
+            List<IMessage> updatedMessages = new List<IMessage>();
+            bool isCurrentMessageReached = false;
+            while (!isCurrentMessageReached && newMessages.Count > 1)
             {
+                newMessages.Reverse(); // Have messages sorted from newest to oldest.
                 for (int i = 0; i < newMessages.Count; i++)
                 {
-                    if (mostRecentTimestamp == newMessages[i].CreatedAt)
+                    if (mostRecentTimestamp == newMessages[i].CreatedAt.ToUnixTimeMilliseconds())
                     {
+                        isCurrentMessageReached = true;
                         updatedMessages = await LogMessages.GetListOfChannelMessages(channel, NewMessagesToRetrieve, newMessages[i], Direction.After);
+                        break;
                     }
                 }
-                newMessages = await LogMessages.GetListOfChannelMessages(channel, NewMessagesToRetrieve, newMessages[newMessages.Count - 1], Direction.Before);
+                if (!isCurrentMessageReached)
+                {
+                    newMessages = await LogMessages.GetListOfChannelMessages(channel, NewMessagesToRetrieve, newMessages[newMessages.Count - 1], Direction.Before);
+                }
             }
 
             // Create a list with only the message IDs of the new messages and return it.
@@ -255,9 +277,9 @@ namespace DiscordBot.Connection
         }
 
         [Command("test", "For testing commands")]
-        private void TestMethodAsync(ulong id)
+        private async void TestMethodAsync()
         {
-            // For implementing test functionality.
+            // TODO: make console commands appear on startup and then give the option to end it and start listening to messages/commands
         }
     }
 

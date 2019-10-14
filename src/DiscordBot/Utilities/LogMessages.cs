@@ -27,7 +27,7 @@ namespace DiscordBot.Utilities
             else
             {
                 // Save the channel blacklist from storage.
-                StoreBlacklist();
+                LoadBlacklist();
                 // Cycle through every file in the chat log directory.
                 string[] allFiles = Directory.GetFiles(path);
                 if (allFiles == null) return;
@@ -59,7 +59,7 @@ namespace DiscordBot.Utilities
         }
 
         // Retrieves the blacklist from storage and saves it as a list.
-        private static void StoreBlacklist()
+        private static void LoadBlacklist()
         {
             // Return if blacklist does not exist or is empty.
             string blacklist = Constants.LogBlacklist;
@@ -274,15 +274,31 @@ namespace DiscordBot.Utilities
             return false;
         }
 
+        // Returns true if the given channel has a log that does not have any new messages compared to what is already stored.
+        public static async Task<bool> IsLogUpToDate(SocketTextChannel channel)
+        {
+            List<ulong> channelMessages = GetChannelLog(channel.Id);
+            List<IMessage> msg = await GetListOfChannelMessages(channel, 1);
+            if (channelMessages == null || msg == null) return false;
+            // Retrieve the newest message from the log and compare it with the newest message in the chat.
+            ulong mostRecentMessageId = channelMessages[channelMessages.Count - 1];
+            if (mostRecentMessageId == msg[0].Id) return true;
+            return false;
+        }
+
+        // Returns a list of channel messages from oldest to newest.
         public static async Task<List<IMessage>> GetListOfChannelMessages(SocketTextChannel channel, int numMessages)
         {
             List<IMessage> messageList = (await channel.GetMessagesAsync(numMessages).FlattenAsync()).ToList();
+            messageList.Reverse();
             return messageList;
         }
 
+        // Returns a list of channel messages from oldest to newest using a starting message and direction.
         public static async Task<List<IMessage>> GetListOfChannelMessages(SocketTextChannel channel, int numMessages, IMessage startingMessage, Direction direction)
         {
             List<IMessage> messageList = (await channel.GetMessagesAsync(startingMessage, direction, numMessages).FlattenAsync()).ToList();
+            messageList.Reverse();
             return messageList;
         }
     }
