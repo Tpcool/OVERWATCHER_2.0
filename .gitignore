@@ -6,6 +6,7 @@
 # Tpcool's files
 Old Bot Archives/
 src/DiscordBot/ServerLogs/
+src/DiscordBot/SystemLang/accounts.json
 
 # User-specific files
 *.suo

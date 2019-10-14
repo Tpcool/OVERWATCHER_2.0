@@ -13,6 +13,8 @@ namespace DiscordBot.Utilities
         // Channel ID key, list of message IDs values.
         private static Dictionary<ulong, List<ulong>> _serverLogMessages = new Dictionary<ulong, List<ulong>>();
         private static List<ulong> _blacklist;
+        private const int NewMessagesToRetrieve = 500000;
+        private const int UpdateMessagesToRetrieve = 100;
 
         // Opens and stores the chat log IDs.
         static LogMessages()
@@ -284,6 +286,92 @@ namespace DiscordBot.Utilities
             ulong mostRecentMessageId = channelMessages[channelMessages.Count - 1];
             if (mostRecentMessageId == msg[0].Id) return true;
             return false;
+        }
+
+        // Updates the chatlog for all channels in a server if they exist.
+        public static async void UpdateChannelMessageLog(SocketTextChannel channel)
+        {
+            List<ulong> channelMessages = GetChannelLog(channel.Id);
+            List<ulong> newMessages = await GetUpdatedChannelMessages(channel, channelMessages);
+            channelMessages.AddRange(newMessages);
+            AddOrUpdateChannelLog(channel.Id, channelMessages);
+            AppendLogToStorage(channel.Id, newMessages);
+        }
+
+        // Sets the chatlog for the given channel.
+        public static async void CreateChannelMessageLog(SocketTextChannel channel)
+        {
+            List<ulong> messageIds = await GetAllChannelMessages(channel);
+            AddOrUpdateChannelLog(channel.Id, messageIds);
+            AppendLogToStorage(channel.Id, messageIds);
+        }
+
+        // Returns a list of all message IDs in the specified channel.
+        private static async Task<List<ulong>> GetAllChannelMessages(SocketTextChannel channel)
+        {
+            var messageList = await GetListOfChannelMessages(channel, NewMessagesToRetrieve);
+            List<ulong> messageIds = new List<ulong>(messageList.Count);
+
+            foreach (IMessage msg in messageList)
+            {
+                messageIds.Add(msg.Id);
+            }
+            return messageIds;
+        }
+
+        // Returns a list of all of the new message IDs in a channel.
+        private static async Task<List<ulong>> GetUpdatedChannelMessages(SocketTextChannel channel, List<ulong> oldMessages)
+        {
+            if (oldMessages == null) return null;
+            long mostRecentTimestamp = DateTimeOffset.MaxValue.ToUnixTimeMilliseconds();
+
+            // Goes through all currently stored messages to find the most recent valid entry to save when it was posted.
+            for (int i = oldMessages.Count - 1; i >= 0; i--)
+            {
+                IMessage msg = await channel.GetMessageAsync(oldMessages[i]);
+                if (!(msg == null))
+                {
+                    mostRecentTimestamp = msg.CreatedAt.ToUnixTimeMilliseconds();
+                    break;
+                }
+            }
+
+            // If no valid entries were found, provide feedback and return nothing.
+            if (mostRecentTimestamp == DateTimeOffset.MaxValue.ToUnixTimeMilliseconds())
+            {
+                Console.WriteLine($"Cannot locate most recent message in {channel.Name}'s log.");
+                return null;
+            }
+
+            // Cycles through all new messages until the most recently saved message is found and saves all new entries to a list.
+            List<IMessage> newMessages = await GetListOfChannelMessages(channel, UpdateMessagesToRetrieve);
+            List<IMessage> updatedMessages = new List<IMessage>();
+            bool isCurrentMessageReached = false;
+            while (!isCurrentMessageReached && newMessages.Count > 1)
+            {
+                newMessages.Reverse(); // Have messages sorted from newest to oldest.
+                for (int i = 0; i < newMessages.Count; i++)
+                {
+                    if (mostRecentTimestamp == newMessages[i].CreatedAt.ToUnixTimeMilliseconds())
+                    {
+                        isCurrentMessageReached = true;
+                        updatedMessages = await GetListOfChannelMessages(channel, NewMessagesToRetrieve, newMessages[i], Direction.After);
+                        break;
+                    }
+                }
+                if (!isCurrentMessageReached)
+                {
+                    newMessages = await GetListOfChannelMessages(channel, NewMessagesToRetrieve, newMessages[newMessages.Count - 1], Direction.Before);
+                }
+            }
+
+            // Create a list with only the message IDs of the new messages and return it.
+            List<ulong> newMessageIds = new List<ulong>(updatedMessages.Count);
+            foreach (var msg in updatedMessages)
+            {
+                newMessageIds.Add(msg.Id);
+            }
+            return newMessageIds;
         }
 
         // Returns a list of channel messages from oldest to newest.

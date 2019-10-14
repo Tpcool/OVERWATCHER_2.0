@@ -30,11 +30,39 @@ namespace DiscordBot.Connection
             client.Ready += RepeatingTimer.StartTimer;
             client.ReactionAdded += OnReactAdded;
             client.MessageReceived += OnMessageReceived;
+            client.JoinedGuild += Client_JoinedGuild;
+            client.LeftGuild += Client_LeftGuild;
             await client.SetGameAsync(Messages.GetAlert("System.Game"), type: ActivityType.Listening);
             await client.LoginAsync(TokenType.Bot, config.GetValueFor(Constants.ConfigKeyToken));
             await client.StartAsync();
             Global.Client = client;
             ConsoleTools.ConsoleInput();
+        }
+
+        private Task Client_JoinedGuild(SocketGuild server)
+        {
+            if (server.TextChannels != null)
+            {
+                foreach (SocketTextChannel channel in server.TextChannels)
+                {
+                    LogMessages.CreateChannelMessageLog(channel);
+                }
+            }
+            Console.WriteLine($"Server {server.Name} has just been joined.");
+            return Task.CompletedTask;
+        }
+
+        private Task Client_LeftGuild(SocketGuild server)
+        {
+            if (server.TextChannels != null)
+            {
+                foreach (SocketTextChannel channel in server.TextChannels)
+                {
+                    LogMessages.RemoveLogIfExists(channel.Id);
+                }
+            }
+            Console.WriteLine($"Server {server.Name} has just been left.");
+            return Task.CompletedTask;
         }
 
         private Task OnMessageReceived(SocketMessage msg)

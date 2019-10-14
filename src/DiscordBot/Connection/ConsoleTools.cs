@@ -13,8 +13,8 @@ namespace DiscordBot.Connection
 {
     internal class ConsoleTools
     {
-        private const int NewMessagesToRetrieve = 500000;
-        private const int UpdateMessagesToRetrieve = 100;
+
+        private static bool continueConsoleTools = true;
         private static readonly char prefix = Messages.GetAlert("System.Prefix")[0];
 
         public static async Task ConsoleInput()
@@ -22,7 +22,7 @@ namespace DiscordBot.Connection
             string input = "";
             ConsoleTools obj = new ConsoleTools();
 
-            while (true)
+            while (continueConsoleTools)
             {
                 // Retrieves input and, if it is a command, attempts to format it to be parsed.
                 input = Console.ReadLine().ToLower().Trim();
@@ -108,13 +108,14 @@ namespace DiscordBot.Connection
             }
         }
 
-        [Command("block", "Toggles the bot on/off so it can only listen to console commands.")]
-        private void BlockMethod()
+        [Command("exit", "Exits the command prompt features and allows the bot to listen to commands.")]
+        private void ExitMethod()
         {
-
+            LogMethod();
+            continueConsoleTools = false;
         }
 
-        [Command("log", "Makes current the list of logs and enables updates for each message received.")]
+        [Command("log", "Makes current the list of logs and enables updates for each message received. This command is automatically called once the command prompt mode is exited.")]
         private async void LogMethod()
         {
             var context = Global.Client;
@@ -139,105 +140,19 @@ namespace DiscordBot.Connection
                     // Update log
                     else if (LogMessages.DoesChannelIdExistInLog(channel.Id))
                     {
-                        UpdateChannelMessageLog(channel);
+                        LogMessages.UpdateChannelMessageLog(channel);
                         Console.WriteLine(consoleMessage + "updated.");
                     }
                     // Create log
                     else
                     {
-                        CreateChannelMessageLog(channel);
+                        LogMessages.CreateChannelMessageLog(channel);
                         Console.WriteLine(consoleMessage + "created.");
                     }
                 }
             }
             // Log is ready to be updated with incoming messages since it is now up-to-date.
             Global.IsLoggingActive = true;
-        }
-
-        // Updates the chatlog for all channels in a server if they exist.
-        private async void UpdateChannelMessageLog(SocketTextChannel channel)
-        {
-            List<ulong> channelMessages = LogMessages.GetChannelLog(channel.Id);
-            List<ulong> newMessages = await GetUpdatedChannelMessages(channel, channelMessages);
-            channelMessages.AddRange(newMessages);
-            LogMessages.AddOrUpdateChannelLog(channel.Id, channelMessages);
-            LogMessages.AppendLogToStorage(channel.Id, newMessages);
-        }
-
-        // Sets the chatlog for all channels in a server.
-        private async void CreateChannelMessageLog(SocketTextChannel channel)
-        {
-            List<ulong> messageIds = await GetAllChannelMessages(channel);
-            LogMessages.AddOrUpdateChannelLog(channel.Id, messageIds);
-            LogMessages.AppendLogToStorage(channel.Id, messageIds);
-        }
-
-        // Returns a list of all message IDs in the specified channel.
-        private async Task<List<ulong>> GetAllChannelMessages(SocketTextChannel channel)
-        {
-            var messageList = await LogMessages.GetListOfChannelMessages(channel, NewMessagesToRetrieve);
-            List<ulong> messageIds = new List<ulong>(messageList.Count);
-
-            foreach (IMessage msg in messageList)
-            {
-                messageIds.Add(msg.Id);
-            }
-            return messageIds;
-        }
-
-        // Returns a list of all of the new message IDs in a channel.
-        private async Task<List<ulong>> GetUpdatedChannelMessages(SocketTextChannel channel, List<ulong> oldMessages)
-        {
-            if (oldMessages == null) return null;
-            long mostRecentTimestamp = DateTimeOffset.MaxValue.ToUnixTimeMilliseconds();
-
-            // Goes through all currently stored messages to find the most recent valid entry to save when it was posted.
-            for (int i = oldMessages.Count - 1; i >= 0; i--)
-            {
-                IMessage msg = await channel.GetMessageAsync(oldMessages[i]);
-                if (!(msg == null))
-                {
-                    mostRecentTimestamp = msg.CreatedAt.ToUnixTimeMilliseconds();
-                    break;
-                }
-            }
-
-            // If no valid entries were found, provide feedback and return nothing.
-            if (mostRecentTimestamp == DateTimeOffset.MaxValue.ToUnixTimeMilliseconds())
-            {
-                Console.WriteLine($"Cannot locate most recent message in {channel.Name}'s log.");
-                return null;
-            }
-
-            // Cycles through all new messages until the most recently saved message is found and saves all new entries to a list.
-            List<IMessage> newMessages = await LogMessages.GetListOfChannelMessages(channel, UpdateMessagesToRetrieve);
-            List<IMessage> updatedMessages = new List<IMessage>();
-            bool isCurrentMessageReached = false;
-            while (!isCurrentMessageReached && newMessages.Count > 1)
-            {
-                newMessages.Reverse(); // Have messages sorted from newest to oldest.
-                for (int i = 0; i < newMessages.Count; i++)
-                {
-                    if (mostRecentTimestamp == newMessages[i].CreatedAt.ToUnixTimeMilliseconds())
-                    {
-                        isCurrentMessageReached = true;
-                        updatedMessages = await LogMessages.GetListOfChannelMessages(channel, NewMessagesToRetrieve, newMessages[i], Direction.After);
-                        break;
-                    }
-                }
-                if (!isCurrentMessageReached)
-                {
-                    newMessages = await LogMessages.GetListOfChannelMessages(channel, NewMessagesToRetrieve, newMessages[newMessages.Count - 1], Direction.Before);
-                }
-            }
-
-            // Create a list with only the message IDs of the new messages and return it.
-            List<ulong> newMessageIds = new List<ulong>(updatedMessages.Count);
-            foreach (var msg in updatedMessages)
-            {
-                newMessageIds.Add(msg.Id);
-            }
-            return newMessageIds;
         }
 
         [Command("blacklist", "Toggles the channels in the log's blacklist.")]
@@ -279,7 +194,7 @@ namespace DiscordBot.Connection
         [Command("test", "For testing commands")]
         private async void TestMethodAsync()
         {
-            // TODO: make console commands appear on startup and then give the option to end it and start listening to messages/commands
+
         }
     }
 
