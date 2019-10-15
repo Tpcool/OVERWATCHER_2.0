@@ -4,7 +4,6 @@ using Discord.WebSocket;
 using DiscordBot.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace DiscordBot.Modules
@@ -13,47 +12,98 @@ namespace DiscordBot.Modules
     {
         private Random rndm = new Random();
 
+        // TODO: Figure out how to do comma separated commands
+        // Create new remember-friendly log that removes bot, old overwatcher (non-bot), and command invoking messages.
         [Command("remember"), Remarks("log"),
             Summary("Posts a random message in the current server's log.")]
         public async Task Remember(string phrase = "", string user = "")
         {
             string message = string.Empty;
-            //Don't allow command to initiate in DMs
+            // Don't allow command to initiate in DMs
             var guilds = Context.Guild;
             if (guilds == null)
             {
                 message = "hey dumbass this command only works in a server";
             }
+            else if (LogMessages.ServerLogMessages() == null)
+            {
+                message = "umm the chat logs haven't been loaded... :(";
+            }
             else
             {
-                List<ulong> serverMessages = new List<ulong>();
-                foreach (SocketTextChannel channel in guilds.TextChannels)
+                IMessage msg = null;
+                while (msg == null)
                 {
-                    serverMessages.AddRange(LogMessages.GetChannelLog(channel.Id));
+                    List<ulong> serverMessages = new List<ulong>();
+                    Dictionary<ulong, int> channelMessageCount = new Dictionary<ulong, int>();
+                    foreach (SocketTextChannel channel in guilds.TextChannels)
+                    {
+                        List<ulong> channelMessages = LogMessages.GetChannelLog(channel.Id);
+                        serverMessages.AddRange(channelMessages);
+                        channelMessageCount.Add(channel.Id, channelMessages.Count);
+                    }
+
+                    if (serverMessages == null)
+                    {
+                        await ReplyAsync("hey dumbass this command only works in a server");
+                        return;
+                    }
+                    else
+                    {
+                        int i = rndm.Next(serverMessages.Count);
+                        int iTemp = i;
+                        ulong channelId = 0;
+                        foreach (KeyValuePair<ulong, int> chMsg in channelMessageCount)
+                        {
+                            if (iTemp > chMsg.Value - 1)
+                            {
+                                iTemp -= chMsg.Value;
+                            }
+                            else
+                            {
+                                channelId = chMsg.Key;
+                            }
+                        }
+                        msg = await LogMessages.GetMessageUsingId(serverMessages[i], channelId);
+                        if (msg != null && (msg.Content.StartsWith('.') || msg.Author.IsBot)) msg = null;
+                    }
                 }
-                if (serverMessages == null)
+                string contents = string.Empty, attachments = string.Empty;
+                if (msg.Attachments != null)
                 {
-                    message = "hey dumbass this command only works in a server";
+                    foreach (var attachment in msg.Attachments)
+                    {
+                        attachments += attachment.Url + "\n";
+                    }
+                }
+                if (msg.Content != null)
+                {
+                    contents = msg.Content;
+                }
+
+                message = $"remember when {msg.Author.Username.ToLower()} said:\n\"{attachments}\n{contents}\"";
+                if (message.Length < Constants.CharacterLimit && attachments == string.Empty)
+                {
+                    message = $"remember when {msg.Author.Username.ToLower()} said:\n\"{contents}\"";
+                }
+                else if (message.Length < Constants.CharacterLimit)
+                {
+
+                }
+                else if (contents == string.Empty)
+                {
+                    message = $"remember when {msg.Author.Username.ToLower()} uploaded:\n\"{attachments}\"";
+                }
+                else if (message.Length > Constants.CharacterLimit && message.Length - attachments.Length <= Constants.CharacterLimit)
+                {
+                    message = $"remember when {msg.Author.Username.ToLower()} said:\n\"{contents}\"";
                 }
                 else
                 {
-                    int i = rndm.Next(serverMessages.Count);
-                    // serverMessages[i];
-                    // TODO: Retrieve message using its ID
-                    // If the message can't be found remove it from the log and search again
-                    // If log has not been loaded, send message
-                    // If it's just an image or file, repost link
+                    message = contents;
                 }
             }
-
-            //var msgs = await Context.Channel.GetMessagesAsync(Context.Message, Direction.Before, 100).FlattenAsync();
-            var mess = await Context.Channel.GetMessagesAsync(500000).FlattenAsync();
-            var msgList = mess.ToList();
-            //foreach (var msg in MsgList)
-            //{
-
-            //}
-            await ReplyAsync($"{msgList.Count} messages!");
+            await ReplyAsync(message);
         }
     }
 }

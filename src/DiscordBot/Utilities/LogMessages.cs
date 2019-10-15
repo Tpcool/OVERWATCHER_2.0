@@ -186,6 +186,26 @@ namespace DiscordBot.Utilities
             }
         }
 
+        // Removes a given message in the the program and in the storage.
+        private static void RemoveMessageIfExists(ulong message, ulong channel)
+        {
+            string directory = Constants.LogDirectory;
+            string logPath = $@"{directory}{channel.ToString()}.txt";
+            if (File.Exists(logPath) && _serverLogMessages.TryGetValue(channel, out List<ulong> channelMessages))
+            {
+                if (channelMessages.Remove(message))
+                {
+                    _serverLogMessages[channel] = channelMessages;
+                    string messages = string.Empty;
+                    foreach (ulong msg in channelMessages)
+                    {
+                        messages += msg.ToString() + "\n";
+                    }
+                    File.WriteAllText(logPath, messages);
+                }
+            }
+        }
+
         // Checks to see if the channel ID specified exists in the current chatlog.
         public static bool DoesChannelIdExistInLog(ulong id)
         {
@@ -388,6 +408,22 @@ namespace DiscordBot.Utilities
             List<IMessage> messageList = (await channel.GetMessagesAsync(startingMessage, direction, numMessages).FlattenAsync()).ToList();
             messageList.Reverse();
             return messageList;
+        }
+
+        public static async Task<IMessage> GetMessageUsingId(ulong messageId, ulong channelId)
+        {
+            SocketTextChannel channel = Global.GetSocketChannelWithId(channelId) as SocketTextChannel;
+            IMessage msg = await channel.GetMessageAsync(messageId);
+            // If the message does not exist, delete it from the chatlog.
+            if (msg == null)
+            {
+                RemoveMessageIfExists(messageId, channelId);
+                return null;
+            }
+            else
+            {
+                return msg;
+            }
         }
     }
 }
