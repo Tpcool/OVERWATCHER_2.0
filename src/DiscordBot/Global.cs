@@ -26,5 +26,12 @@ namespace DiscordBot
             if (channel == null) return false;
             return true;
         }
+
+        public static bool IsValidUserId(ulong id)
+        {
+            IUser channel = GetSocketUserWithId(id);
+            if (channel == null) return false;
+            return true;
+        }
     }
 }

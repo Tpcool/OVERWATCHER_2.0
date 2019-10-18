@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Reflection;
 using DiscordBot.Utilities;
 using Discord.WebSocket;
+using System.IO;
 
 namespace DiscordBot.Connection
 {
@@ -186,6 +187,20 @@ namespace DiscordBot.Connection
             }
             if (msg.Equals(string.Empty)) msg = "The blacklist only has invalid entries.";
             Console.WriteLine(msg);
+        }
+
+        [Command("messageblacklist", "Blacklists specific users from having their messages saved.")]
+        private void MessageBlacklistMethod()
+        {
+            // Tries to store the given ID as a channel, provides feedback if it is not.
+            if (Global.IsValidChannelId(id))
+            {
+                Console.WriteLine("Not a valid channel ID.");
+                return;
+            }
+
+            // Writes the ID to a new file if it does not exist, otherwise toggles ID in current list and saves.
+            LogMessages.ToggleBlacklistEntry(id);
         }
 
         [Command("test", "For testing commands")]

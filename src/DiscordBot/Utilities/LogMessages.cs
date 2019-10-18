@@ -101,7 +101,6 @@ namespace DiscordBot.Utilities
                 blacklist.Add(id);
                 return;
             }
-            IChannel channel = Global.GetSocketChannelWithId(id);
 
             int i = 0;
             bool wasInBlacklist = false;
