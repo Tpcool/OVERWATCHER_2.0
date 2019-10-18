@@ -13,7 +13,6 @@ namespace DiscordBot.Modules
         private Random rndm = new Random();
 
         // TODO: Figure out how to do comma separated commands
-        // Create new remember-friendly log that removes bot, old overwatcher (non-bot), and command invoking messages.
         [Command("remember"), Remarks("log"),
             Summary("Posts a random message in the current server's log.")]
         public async Task Remember(string phrase = "", string user = "")

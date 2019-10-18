@@ -12,11 +12,14 @@ namespace DiscordBot.Utilities
     {
         // Channel ID key, list of message IDs values.
         private static Dictionary<ulong, List<ulong>> _serverLogMessages = new Dictionary<ulong, List<ulong>>();
+        // Make new class specifically for these logs?
+        // IChannel, IMessage log for general use (like .count)
+        // IChannel, IMessage log more filtered version of above for .remember (no command messages or bot messages)
         private static List<ulong> _blacklist;
         private const int NewMessagesToRetrieve = 500000;
         private const int UpdateMessagesToRetrieve = 100;
 
-        // Opens and stores the chat log IDs.
+        // Opens and saves the chat log IDs from storage.
         static LogMessages()
         {
             string path = Constants.LogDirectory;
