@@ -18,6 +18,7 @@ namespace DiscordBot.Utilities
         private static List<ulong> _blacklist;
         private const int NewMessagesToRetrieve = 500000;
         private const int UpdateMessagesToRetrieve = 100;
+        public enum FileReturn { FileDoesNotExist, EntryAdded, EntryRemoved }
 
         // Opens and saves the chat log IDs from storage.
         static LogMessages()
@@ -89,6 +90,44 @@ namespace DiscordBot.Utilities
         public static List<ulong> Blacklist()
         {
             return _blacklist;
+        }
+
+        /// <summary>
+        /// Adds or removes an entry in a given storage file and returns true if the entry is toggled on
+        /// </summary>
+        /// <param name="entry">The line to add or remove from storage</param>
+        /// <returns>Returns true if added to storage, false if removed from storage</returns>
+        public static FileReturn ToggleStorageEntry(string path, string entry)
+        {
+            if (!File.Exists(path)) return FileReturn.FileDoesNotExist;
+            List<string> storageList = File.ReadAllLines(path).ToList();
+            if (storageList.Count == 0)
+            {
+                File.WriteAllText(path, entry);
+                return FileReturn.EntryAdded;
+            }
+
+            int i = 0;
+            FileReturn listStatus = FileReturn.EntryAdded;
+            // Go through all entries and remove the ones that match, if any.
+            foreach (string storageEntry in storageList)
+            {
+                // If the entry is already in storage, delete it.
+                if (storageEntry == entry)
+                {
+                    storageList.RemoveAt(i);
+                    listStatus = FileReturn.EntryRemoved;
+                }
+                i += 1;
+            }
+            // Adds the entry to the list if it does not exist.
+            if (listStatus == FileReturn.EntryAdded)
+            {
+                storageList.Add(entry);
+            }
+            // Write the changes to storage.
+            File.WriteAllLines(path, storageList);
+            return listStatus;
         }
 
         // If given a valid channel ID, the ID will either be added or removed from the channel blacklist.
