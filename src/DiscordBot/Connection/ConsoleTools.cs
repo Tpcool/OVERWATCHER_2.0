@@ -124,7 +124,7 @@ namespace DiscordBot.Connection
                 {
                     string consoleMessage = $"The chatlog for channel #{channel.Name} of server \"{guild.Name}\" has been ";
                     // Ignore blacklisted channels
-                    if (LogMessages.IsChannelBlacklisted(channel.Id))
+                    if (LogMessages.DoesValueExistInList(LogMessages.Blacklist(), channel.Id))
                     {
                         Console.WriteLine(consoleMessage + "ignored.");
                         continue;
@@ -157,7 +157,7 @@ namespace DiscordBot.Connection
         private void LogBlacklistMethod(ulong id)
         {
             // Tries to store the given ID as a channel, provides feedback if it is not.
-            if (Global.IsValidChannelId(id))
+            if (!Global.IsValidChannelId(id))
             {
                 Console.WriteLine("Not a valid channel ID.");
                 return;

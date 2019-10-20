@@ -33,7 +33,7 @@ namespace DiscordBot.Utilities
             else
             {
                 // Save the channel blacklist from storage.
-                LoadBlacklist();
+                _blacklist = GetListFromStorage(Constants.LogBlacklist);
                 // Cycle through every file in the chat log directory.
                 string[] allFiles = Directory.GetFiles(path);
                 if (allFiles == null) return;
@@ -61,23 +61,6 @@ namespace DiscordBot.Utilities
                         }
                     }
                 }
-            }
-        }
-
-        // Retrieves the blacklist from storage and saves it as a list.
-        private static void LoadBlacklist()
-        {
-            // Return if blacklist does not exist or is empty.
-            string blacklist = Constants.LogBlacklist;
-            if (!File.Exists(blacklist) || File.ReadAllText(blacklist).Equals(string.Empty)) return;
-
-            // Get the list of channel IDs, convert them to ulongs, store in list.
-            List<string> stringList = File.ReadLines(blacklist).ToList();
-            _blacklist = new List<ulong>(stringList.Count);
-            if (stringList == null) return;
-            foreach (string channel in stringList)
-            {
-                if (ulong.TryParse(channel, out ulong id)) _blacklist.Add(id);
             }
         }
 
@@ -130,59 +113,55 @@ namespace DiscordBot.Utilities
             return listStatus;
         }
 
+        // Returns a list of ulongs from storage using the given path and returns a null list if values cannot be converted.
+        public static List<ulong> GetListFromStorage(string path)
+        {
+            if (!File.Exists(path)) return null;
+            string[] storageList = File.ReadAllLines(path);
+            List<ulong> newList = new List<ulong>(storageList.Length);
+            foreach (string entry in storageList)
+            {
+                if (ulong.TryParse(entry, out ulong result))
+                {
+                    newList.Add(result);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            return newList;
+        }
+
         // If given a valid channel ID, the ID will either be added or removed from the channel blacklist.
         public static void ToggleBlacklistEntry(ulong id)
         {
-            List<ulong> blacklist = Blacklist();
-            // If the blacklist does not exist, create a new blacklist file with the given ID as the first entry.
-            if (blacklist.Count == 0 && Global.IsValidChannelId(id))
+            string path = Constants.LogBlacklist;
+            FileReturn status = ToggleStorageEntry(path, id.ToString());
+            if (status == FileReturn.FileDoesNotExist)
             {
-                blacklist.Add(id);
                 return;
             }
-
-            int i = 0;
-            bool wasInBlacklist = false;
-            if (blacklist == null) return;
-            // Go through all entries and remove the ones that match, if any.
-            foreach (ulong entry in blacklist)
-            {
-                // If the channel is already in the blacklist, delist it.
-                if (entry == id)
-                {
-                    blacklist.RemoveAt(i);
-                    wasInBlacklist = true;
-                }
-                i += 1;
-            }
-            // If the channel is not in the blacklist, remove any saved logs and add the ID to the blacklist.
-            if (!wasInBlacklist)
+            else if (status == FileReturn.EntryAdded)
             {
                 RemoveLogIfExists(id);
-                blacklist.Add(id);
             }
-            // Saves the modified blacklist to storage.
+
+            // Gets the modified log from storage and sets it to the variable.
+            List<ulong> blacklist = GetListFromStorage(path);
             _blacklist = blacklist;
-            SaveBlacklistToStorage();
         }
 
-        // Cycles through all entries in the blacklist data structure and saves it to storage.
-        private static void SaveBlacklistToStorage()
+        // Cycles through all entries in the given list and saves it to storage.
+        private static void SaveListToStorage(string path, List<ulong> list)
         {
-            string blacklistPath = Constants.LogBlacklist;
-            string blacklistString = string.Empty;
-            List<ulong> blacklist = Blacklist();
-
-            if (blacklist == null) return;
-            foreach (ulong entry in blacklist)
-            {
-                blacklistString += entry.ToString() + "\n";
-            }
-            File.WriteAllText(blacklistPath, blacklistString);
+            if (list == null || !File.Exists(path)) return;
+            string[] arrayList = list.Select(i => i.ToString()).ToArray();
+            File.WriteAllLines(path, arrayList);
         }
 
         // Saves the given channel's chatlog in the dictionary to storage using only the new messages in that channel.
-        public static void AppendLogToStorage(ulong channel, List<ulong> newMessages)
+        private static void AppendLogToStorage(ulong channel, List<ulong> newMessages)
         {
             if (newMessages == null) return;
             string directory = Constants.LogDirectory;
@@ -324,15 +303,14 @@ namespace DiscordBot.Utilities
             return serverMessageCount;
         }
 
-        // Checks to see if the received channel ID is in the list of blacklisted channels.
-        public static bool IsChannelBlacklisted(ulong channel)
+        // Checks to see if the ulong value is in the given list.
+        public static bool DoesValueExistInList(List<ulong> list, ulong value)
         {
-            List<ulong> blacklist = Blacklist();
-            if (blacklist == null) return false;
+            if (list == null) return false;
             // Go through every entry and compare it to the given channel ID.
-            foreach (ulong blacklistedChannel in blacklist)
+            foreach (ulong entry in list)
             {
-                if (channel == blacklistedChannel) return true;
+                if (value == entry) return true;
             }
             return false;
         }

@@ -72,7 +72,7 @@ namespace DiscordBot.Connection
                 var user = UserAccounts.GetAccount(msg.Author);
                 user.AddCurrency(1);
             }
-            if (Global.IsLoggingActive && !LogMessages.IsChannelBlacklisted(msg.Channel.Id))
+            if (Global.IsLoggingActive && !LogMessages.DoesValueExistInList(LogMessages.Blacklist(), msg.Channel.Id))
             {
                 LogMessages.AddOrAppendChannelLog(msg.Channel.Id, msg.Id);
                 LogMessages.AppendLogToStorage(msg.Channel.Id, msg.Id);
