@@ -190,23 +190,23 @@ namespace DiscordBot.Connection
         }
 
         [Command("messageblacklist", "Blacklists specific users from having their messages saved.")]
-        private void MessageBlacklistMethod()
+        private void MessageBlacklistMethod(ulong id)
         {
             // Tries to store the given ID as a channel, provides feedback if it is not.
-            if (Global.IsValidChannelId(id))
+            if (Global.IsValidUserId(id))
             {
-                Console.WriteLine("Not a valid channel ID.");
+                Console.WriteLine("Not a valid user ID.");
                 return;
             }
 
             // Writes the ID to a new file if it does not exist, otherwise toggles ID in current list and saves.
-            LogMessages.ToggleBlacklistEntry(id);
+            ProgramMessages.ToggleUserBlacklistEntry(id);
         }
 
         [Command("test", "For testing commands")]
-        private async void TestMethodAsync()
+        private void TestMethod()
         {
-
+            Console.WriteLine("This command does nothing right now.");
         }
     }
 

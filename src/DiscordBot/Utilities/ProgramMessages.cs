@@ -4,17 +4,18 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using static DiscordBot.Utilities.LogMessages;
 
 namespace DiscordBot.Utilities
 {
-    public class ProgramMessages
+    public static class ProgramMessages
     {
         // Contains all retrieved messages with the channel and message data.
         private static Dictionary<IChannel, List<IMessage>> _channelMessages = new Dictionary<IChannel, List<IMessage>>();
         // Contains all retrieved messages without bot commands or bot messages.
         private static Dictionary<IChannel, List<IMessage>> _channelMessagesCondensed = new Dictionary<IChannel, List<IMessage>>();
         // Contains all of the users that messages will not be counted for in certain contexts.
-        private static List<ulong> _messageBlacklist = new List<ulong>();
+        private static List<ulong> _userBlacklist = new List<ulong>();
 
         static ProgramMessages()
         {
@@ -23,7 +24,7 @@ namespace DiscordBot.Utilities
 
         private static async void SetUpProgramMessages()
         {
-            Dictionary<ulong, List<ulong>> serverLogMessages = LogMessages.ServerLogMessages();
+            Dictionary<ulong, List<ulong>> serverLogMessages = ServerLogMessages();
             foreach (KeyValuePair<ulong, List<ulong>> entry in serverLogMessages)
             {
                 SocketTextChannel channel = Global.GetSocketChannelWithId(entry.Key) as SocketTextChannel;
@@ -33,6 +34,7 @@ namespace DiscordBot.Utilities
                 foreach (ulong msgId in entry.Value)
                 {
                     IMessage msg = await GetMessageUsingId(msgId, channel);
+                    if (msg == null) continue;
 
                     tempChannelMessages.Add(msg);
                     if (IsValidMessage(msg)) tempChannelMessagesCondensed.Add(msg);
@@ -49,9 +51,43 @@ namespace DiscordBot.Utilities
             }
         }
 
-        public static List<ulong> MessageBlacklist()
+        public static List<ulong> UserBlacklist()
         {
-            return _messageBlacklist;
+            return _userBlacklist;
+        }
+
+        public static Dictionary<IChannel, List<IMessage>> ChannelMessages()
+        {
+            return _channelMessages;
+        }
+
+        public static Dictionary<IChannel, List<IMessage>> ChannelMessagesCondensed()
+        {
+            return _channelMessagesCondensed;
+        }
+
+        public static List<IMessage> GetSavedChannelMessages(IChannel channel)
+        {
+            if (_channelMessages.TryGetValue(channel, out List<IMessage> list))
+            {
+                return list;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public static List<IMessage> GetSavedChannelMessagesCondensed(IChannel channel)
+        {
+            if (_channelMessagesCondensed.TryGetValue(channel, out List<IMessage> list))
+            {
+                return list;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         private static async Task<IMessage> GetMessageUsingId(ulong messageId, SocketTextChannel channel)
@@ -62,50 +98,34 @@ namespace DiscordBot.Utilities
 
         private static bool IsValidMessage(IMessage msg)
         {
-             
-            return false;
-        }
-
-        // TODO: Make one all-purpose entry toggle function
-        // If given a valid user ID, the ID will either be added or removed from the user message blacklist.
-        public static void ToggleMessageBlacklistEntry(ulong id)
-        {
-            List<ulong> messageBlacklist = MessageBlacklist();
-            // If the blacklist does not exist, create a new blacklist file with the given ID as the first entry.
-            if (messageBlacklist.Count == 0 && Global.IsValidUserId(id))
+            // Is the author of the message blacklisted?
+            bool userBlacklisted = DoesValueExistInList(_userBlacklist, msg.Author.Id);
+            // Is the message one that is invoking a bot command?
+            bool commandMessage = msg.Content.StartsWith(Messages.GetAlert("System.Prefix")[0]);
+            if (userBlacklisted || commandMessage)
             {
-                messageBlacklist.Add(id);
+                return false;
+            }
+            return true;
+        }
+        
+        // If given a valid user ID, the ID will either be added or removed from the user message blacklist.
+        public static void ToggleUserBlacklistEntry(ulong id)
+        {
+            string path = Constants.UserBlacklist;
+            FileReturn status = ToggleStorageEntry(path, id.ToString());
+            if (status == FileReturn.FileDoesNotExist)
+            {
                 return;
             }
-
-            int i = 0;
-            bool wasInBlacklist = false;
-            if (messageBlacklist == null) return;
-            // Go through all entries and remove the ones that match, if any.
-            foreach (ulong entry in messageBlacklist)
+            else if (status == FileReturn.EntryAdded)
             {
-                // If the channel is already in the blacklist, delist it.
-                if (entry == id)
-                {
-                    messageBlacklist.RemoveAt(i);
-                    wasInBlacklist = true;
-                }
-                i += 1;
+                // TODO: Remove all instances of user in condensed log
             }
-            // If the channel is not in the blacklist, remove any saved logs and add the ID to the blacklist.
-            if (!wasInBlacklist)
-            {
-                RemoveMessagesIfExist();
-                messageBlacklist.Add(id);
-            }
-            // Saves the modified blacklist to storage.
-            _messageBlacklist = messageBlacklist;
-            SaveBlacklistToStorage();
-        }
 
-        private static bool IsUserBlacklisted(ulong id)
-        {
-
+            // Gets the modified log from storage and sets it to the variable.
+            List<ulong> userBlacklist = GetListFromStorage(path);
+            _userBlacklist = userBlacklist;
         }
     }
 }

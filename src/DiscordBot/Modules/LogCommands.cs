@@ -24,48 +24,25 @@ namespace DiscordBot.Modules
             {
                 message = "hey dumbass this command only works in a server";
             }
-            else if (LogMessages.ServerLogMessages() == null)
+            else if (ProgramMessages.ChannelMessagesCondensed() == null)
             {
                 message = "umm the chat logs haven't been loaded... :(";
             }
             else
             {
                 IMessage msg = null;
-                while (msg == null)
+                List<IMessage> serverMessages = new List<IMessage>();
+                Dictionary<SocketTextChannel, int> channelMessageCount = new Dictionary<SocketTextChannel, int>();
+                foreach (SocketTextChannel channel in guilds.TextChannels)
                 {
-                    List<ulong> serverMessages = new List<ulong>();
-                    Dictionary<ulong, int> channelMessageCount = new Dictionary<ulong, int>();
-                    foreach (SocketTextChannel channel in guilds.TextChannels)
-                    {
-                        List<ulong> channelMessages = LogMessages.GetChannelLog(channel.Id);
-                        serverMessages.AddRange(channelMessages);
-                        channelMessageCount.Add(channel.Id, channelMessages.Count);
-                    }
-
-                    if (serverMessages == null)
-                    {
-                        await ReplyAsync("hey dumbass this command only works in a server");
-                        return;
-                    }
-                    else
-                    {
-                        int i = rndm.Next(serverMessages.Count);
-                        int iTemp = i;
-                        ulong channelId = 0;
-                        foreach (KeyValuePair<ulong, int> chMsg in channelMessageCount)
-                        {
-                            if (iTemp > chMsg.Value - 1)
-                            {
-                                iTemp -= chMsg.Value;
-                            }
-                            else
-                            {
-                                channelId = chMsg.Key;
-                            }
-                        }
-                        msg = await LogMessages.GetMessageUsingId(serverMessages[i], channelId);
-                        if (msg != null && (msg.Content.StartsWith('.') || msg.Author.IsBot)) msg = null;
-                    }
+                    List<IMessage> channelMessages = ProgramMessages.GetSavedChannelMessagesCondensed(channel);
+                    serverMessages.AddRange(channelMessages);
+                    channelMessageCount.Add(channel, channelMessages.Count);
+                }
+                if (serverMessages == null)
+                {
+                    await ReplyAsync("hey dumbass this command only works in a server");
+                    return;
                 }
                 string contents = string.Empty, attachments = string.Empty;
                 if (msg.Attachments != null)
