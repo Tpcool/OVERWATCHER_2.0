@@ -12,7 +12,11 @@ namespace DiscordBot
         public const string LogBlacklist = @"..\..\..\..\DiscordBot\SystemLang\logblacklist.txt";
         public const string UserBlacklist = @"..\..\..\..\DiscordBot\SystemLang\userblacklist.txt";
         public const string LogDirectory = @"..\..\..\..\DiscordBot\ServerLogs\";
+
         public const int CharacterLimit = 2000;
+
+        public const int SansCost = 200;
+
         public static readonly Color LightOver = new Color(170, 142, 214);
         public static readonly Color DarkOver = new Color(85, 57, 134);
         public static readonly Color LightKirby = new Color(243, 165, 170);

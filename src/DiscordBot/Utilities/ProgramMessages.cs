@@ -127,5 +127,34 @@ namespace DiscordBot.Utilities
             List<ulong> userBlacklist = GetListFromStorage(path);
             _userBlacklist = userBlacklist;
         }
+
+        // Adds a single message to the channel log.
+        public static void AddOrAppendChannelLog(IChannel channel, IMessage message)
+        {
+            if (channel == null || message == null) return;
+            if (_channelMessages.ContainsKey(channel))
+            {
+                _channelMessages[channel].Add(message);
+            }
+            else
+            {
+                _channelMessages.Add(channel, new List<IMessage> { message });
+            }
+
+            if (_channelMessagesCondensed.ContainsKey(channel))
+            {
+                if (IsValidMessage(message))
+                {
+                    _channelMessagesCondensed[channel].Add(message);
+                }
+            }
+            else
+            {
+                if (IsValidMessage(message))
+                {
+                    _channelMessagesCondensed.Add(channel, new List<IMessage> { message });
+                }
+            }
+        }
     }
 }

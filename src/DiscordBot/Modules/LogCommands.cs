@@ -36,8 +36,11 @@ namespace DiscordBot.Modules
                 foreach (SocketTextChannel channel in guilds.TextChannels)
                 {
                     List<IMessage> channelMessages = ProgramMessages.GetSavedChannelMessagesCondensed(channel);
-                    serverMessages.AddRange(channelMessages);
-                    channelMessageCount.Add(channel, channelMessages.Count);
+                    if (channelMessages != null)
+                    {
+                        serverMessages.AddRange(channelMessages);
+                        channelMessageCount.Add(channel, channelMessages.Count);
+                    }
                 }
                 if (serverMessages == null)
                 {

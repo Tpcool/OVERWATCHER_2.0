@@ -10,7 +10,7 @@
 .remember
 .russianroulette
 .slots - Revert to emoji slots, increase odds, add timer.
-.sans - Retrieve from image websites using API + tags.
+✓ .sans - Retrieve from image websites using API + tags.
 .shutup - Has timer, costs bux to use.
 .stealbux
 .squarerootornothing - Successful square root on a negative amount will result in imaginary bux.

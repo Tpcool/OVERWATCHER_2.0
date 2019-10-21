@@ -109,8 +109,24 @@ namespace DiscordBot.Connection
         [Command("exit", "Exits the command prompt features and allows the bot to listen to commands.")]
         private void ExitMethod()
         {
-            LogMethod();
+            // TODO: Overhaul LogMessages using database
+            // LogMethod();
+            // InitializeMessages();
             continueConsoleTools = false;
+        }
+
+        private void InitializeMessages()
+        {
+            var log1 = ProgramMessages.ChannelMessages();
+            var log2 = ProgramMessages.ChannelMessagesCondensed();
+            if ((log1 != null && log2 != null) && (log1.Count != 0 && log2.Count != 0))
+            {
+                Console.WriteLine("Logs loaded successfully.");
+            }
+            else
+            {
+                Console.WriteLine("Logs are null.");
+            }
         }
 
         [Command("log", "Makes current the list of logs and enables updates for each message received. This command is automatically called once the command prompt mode is exited.")]

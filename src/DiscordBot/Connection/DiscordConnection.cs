@@ -75,6 +75,7 @@ namespace DiscordBot.Connection
             if (Global.IsLoggingActive && !LogMessages.DoesValueExistInList(LogMessages.Blacklist(), msg.Channel.Id))
             {
                 LogMessages.AddOrAppendChannelLog(msg.Channel.Id, msg.Id);
+                ProgramMessages.AddOrAppendChannelLog(msg.Channel, msg);
                 LogMessages.AppendLogToStorage(msg.Channel.Id, msg.Id);
             }
             return Task.CompletedTask;
