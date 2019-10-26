@@ -88,23 +88,32 @@ namespace DiscordBot.Modules
             Summary("Posts a pornographic image of Sans from Undertale.")]
         public async Task Sans([Remainder]string nothing = "")
         {
-            // TODO: Make post tags easier to read/change
-            // Improve temp file system
-            // Implement currency that must be spent to invoke command
-            string json = "";
-            string fileName = "";
-            using (WebClient client = new WebClient())
+            // Change to shortened link
+            // https://dev.bitly.com/get_started.html
+            UserAccount user = UserAccounts.GetAccount(Context.User);
+            int cost = Constants.SansCost;
+            if (user.Currency < cost)
             {
-                client.Headers.Add(HttpRequestHeader.UserAgent, "Overwatcher (Discord bot by Tpcool thomas@polese.us)");
-                json = client.DownloadString("https://e621.net/post/index.json?tags=sans_(undertale)+rating:e+type:jpg+type:png+order:random&limit=1");
-                var dataObject = JsonConvert.DeserializeObject<dynamic>(json);
-                string imageUrl = dataObject[0].file_url.ToString();
-                string imageExt = "." + dataObject[0].file_ext.ToString();
-                fileName = Path.GetTempPath() + Guid.NewGuid().ToString() + imageExt;
-                client.DownloadFile(imageUrl, fileName);
+                await Context.Channel.SendMessageAsync($"not enough money dumbass you need {cost}.");
+                return;
+            }
+            else
+            {
+                user.AddCurrency(-200);
+                Currency.TryRevertImaginary(user);
             }
 
-            await Context.Channel.SendFileAsync(fileName);
+            user.GetFormattedCurrency();
+            string json, imageUrl, tags;
+            tags = Functions.GetFormattedTagParams("sans_(undertale)", "rating:e", "type:jpg", "type:png", "order:random&limit=1");
+            using (WebClient client = new WebClient())
+            {
+                client.Headers.Add(HttpRequestHeader.UserAgent, "Tpcool (thomas@polese.us)");
+                json = client.DownloadString(Messages.GetAlert("Api.Sans(tags)", tags));
+            }
+            var dataObject = JsonConvert.DeserializeObject<dynamic>(json);
+            imageUrl = dataObject[0].file_url.ToString();
+            await Context.Channel.SendMessageAsync(imageUrl);
         }
     }
 }

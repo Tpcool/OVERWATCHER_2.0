@@ -142,5 +142,19 @@ namespace DiscordBot.Core
             }
             return helpEntries;
         }
+
+        /// <summary>
+        /// Returns a formatted list of tags that are used with an API.
+        /// </summary>
+        public static string GetFormattedTagParams(params string[] tags)
+        {
+            string formattedTags = "";
+            foreach (string entry in tags)
+            {
+                formattedTags += $"{entry}+";
+            }
+            formattedTags = formattedTags.TrimEnd('+');
+            return formattedTags;
+        }
     }
 }

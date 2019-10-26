@@ -10,5 +10,7 @@
 	"Currency.Suffix": "bux",
 	"Currency.Lose": "you lost all your cash lmao",
 	"Currency.Get(user, currency, cName)": "`{0}` has `{1}` {2}.",
-	"Currency.Has(user, currency, cName)": "`{0}` now has `{1}` {2}."
+	"Currency.Has(user, currency, cName)": "`{0}` now has `{1}` {2}.",
+	
+	"Api.Sans(tags)": "https://e621.net/post/index.json?tags={0}"
 }

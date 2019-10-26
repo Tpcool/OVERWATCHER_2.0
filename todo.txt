@@ -37,6 +37,7 @@ Org functionality with to-be org library.
 Relay capabilities between servers.
 Set up alerts when Cory/Polar/etc. post to YouTube or the forums.
 .emojibattle - Rock Paper Scissor with emojis, but uses a ton of emojis for the prereqs.
+Twitter API posting to Overwatcher account
 
 - Deprecated commands:
 .find
